@@ -1,21 +1,22 @@
 #!/usr/bin/python
+import db_update_config as config
 import MySQLdb
+import os
 
-db = MySQLdb.connect(host   = "localhost",
-                     user   = "hendrik",
-                     passwd = "4EYXR21m",
-                     db     = "riot_devices")
+db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.db_config["passwd"], config.db_config["db"])
 
-# you must create a Cursor object. It will let
-#  you execute all the queries you need
-dbCursor = db.cursor()
+# cursor object to execute queries
+db_cursor = db.cursor()
 
-# Use all the SQL you like
-dbCursor.execute("SELECT * FROM devices")
+for i in range(len(config.module_directories)):
+	for (dirpath, dirnames, filenames) in os.walk(config.path_root + config.module_directories[i]):
+		for dirname in dirnames:
+			#db_cursor.execute()
+			print "INSERT INTO modules (name, path, description) VALUES ('{!s}', '{!s}', '{!s}');".format(dirname, dirpath + dirname, " ")
 
-# print all the first cell of all the rows
-for row in dbCursor.fetchall():
+for row in db_cursor.fetchall():
 	for data in row:
 		print data
 
+db_cursor.close()
 db.close()
