@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 import db_config as config
 import MySQLdb
 import os
