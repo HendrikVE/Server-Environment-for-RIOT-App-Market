@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import db_update_config as config
+import db_config as config
 import MySQLdb
 import os
 
