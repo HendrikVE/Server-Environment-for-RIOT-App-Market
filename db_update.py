@@ -39,7 +39,7 @@ def get_description(path):
 	description = ""
 	
 	try:
-		with open(path) as file:  
+		with open(path) as file:
 			description = file.read()
 	except IOError:
 		# ignore missing doc.txt
