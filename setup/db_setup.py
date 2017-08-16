@@ -8,14 +8,31 @@ db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.
 # cursor object to execute queries
 db_cursor = db.cursor()
 
-with open('schema/modules.sql', 'r') as modules_schema:
+try:
+	with open('database/modules.sql', 'r') as modules_sql:
 	
-	lines = modules_schema.readlines()
+		lines = modules_sql.readlines()
+
+		for sql_query in lines:
+			db_cursor.execute(sql_query)
+
+		db.commit()
 	
-	for sql_query in lines:
-		db_cursor.execute(sql_query)
-	
-db.commit()
+except Exception, e:
+	print e
+
+try:
+	with open('database/devices.sql', 'r') as modules_sql:
+
+		lines = modules_sql.readlines()
+
+		for sql_query in lines:
+			db_cursor.execute(sql_query)
+
+		db.commit()
+
+except Exception, e:
+	print e
 
 db_cursor.close()
 db.close()
