@@ -15,7 +15,8 @@ def main():
 
 	for i in range(len(config.module_directories)):
 
-		path = config.path_root + config.module_directories[i] + "/"
+		module_directory = config.module_directories[i]
+		path = config.path_root + module_directory + "/"
 
 		for item in os.listdir(path):
 			if not os.path.isfile(os.path.join(path, item)):
@@ -26,8 +27,8 @@ def main():
 
 				description = get_description(path + item + "/doc.txt")
 				
-				sql = "INSERT INTO modules (name, path, description) VALUES (%s, %s, %s);"
-				db_cursor.execute(sql, (item, path + item + "/", description))
+				sql = "INSERT INTO modules (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
+				db_cursor.execute(sql, (item, path + item + "/", description, module_directory))
 
 	db.commit()
 

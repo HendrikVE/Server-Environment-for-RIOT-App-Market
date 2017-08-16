@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# this script will read sql statements out of files and execute them to setup the database
+
 import db_config as config
 import MySQLdb
 
