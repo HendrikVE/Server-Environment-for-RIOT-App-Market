@@ -65,5 +65,5 @@ def get_devices_replacement():
 	
 	return "".join(str_list)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 	main()
