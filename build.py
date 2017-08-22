@@ -48,6 +48,16 @@ def main(cmd):
 		filename = "Makefile.tmp"
 		with open(filename, "w") as makefile:
 			
+			makefile.write("APPLICATION = ipc_pingpong")
+			makefile.write("\n\n")
+			
+			# TODO: check, if device is in database!!!
+			makefile.write("BOARD ?= {!s}".format(device))
+			makefile.write("\n\n")
+			
+			makefile.write("RIOTBASE ?= $(CURDIR)/../..")
+			makefile.write("\n\n")
+			
 			for module in modules:
 				module_name = get_module_name(module)
 				
@@ -57,6 +67,8 @@ def main(cmd):
 					
 				else :
 					makefile.write("USEMODULE += {!s}\n".format(module_name))
+					
+			makefile.write("include $(RIOTBASE)/Makefile.include")
 					
 		#os.remove(filename)
 	
