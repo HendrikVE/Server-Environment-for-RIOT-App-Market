@@ -12,5 +12,6 @@ path_root = "RIOT/"
 module_directories = [
 	"sys",
 	"pkg",
-	"drivers"
+	"drivers",
+	"tests"
 ]
