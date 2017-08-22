@@ -51,15 +51,14 @@ def main(cmd):
 		full_path = parent_path + application_path
 		
 		create_directories(full_path)
-		os.chdir(full_path)
 		
-		write_makefile(device, modules)
+		write_makefile(device, modules, full_path)
 		
-		execute_makefile()
+		execute_makefile(full_path)
 		
 		# delete temporary directory after finished build
 		time.sleep(5)
-		shutil.rmtree("../" + application_path)
+		shutil.rmtree(full_path)
 	
 def remove_unnecessary_spaces(string):
 	
@@ -103,10 +102,10 @@ def create_directories(path):
 		if e.errno != errno.EEXIST:
 			raise
 			
-def write_makefile(device, modules):
+def write_makefile(device, modules, path):
 	
 	filename = "Makefile"
-	with open(filename, "w") as makefile:
+	with open(path + filename, "w") as makefile:
 
 		makefile.write("APPLICATION = generated_test_application")
 		makefile.write("\n\n")
@@ -135,7 +134,9 @@ def write_makefile(device, modules):
 		
 		close_db()
 		
-def execute_makefile():
+def execute_makefile(path):
+	
+	#make_output = subprocess.check_output(["make"])
 	
 	return
 
