@@ -1,5 +1,4 @@
-import sys
-import os
+import os, errno, sys, time, shutil
 import db_config as config
 import MySQLdb
 
@@ -45,32 +44,21 @@ def main(cmd):
 		print "no module selected!"
 		
 	else:
-		filename = "Makefile.tmp"
-		with open(filename, "w") as makefile:
-			
-			makefile.write("APPLICATION = ipc_pingpong")
-			makefile.write("\n\n")
-			
-			# TODO: check, if device is in database!!!
-			makefile.write("BOARD ?= {!s}".format(device))
-			makefile.write("\n\n")
-			
-			makefile.write("RIOTBASE ?= $(CURDIR)/../..")
-			makefile.write("\n\n")
-			
-			for module in modules:
-				module_name = get_module_name(module)
-				
-				if module_name is None:
-					print "error while reading modules from database"
-					break
+
+		parent_path = "RIOT/generated_by_riotam/"
+		# unique application directory name, TODO: using locks to be safe
+		application_path = "application{!s}/".format(time.time())
+		full_path = parent_path + application_path
+		
+		create_directories(full_path)
+		os.chdir(full_path)
+		
+		write_makefile(device, modules)
+		
+		execute_makefile()
 					
-				else :
-					makefile.write("USEMODULE += {!s}\n".format(module_name))
-					
-			makefile.write("include $(RIOTBASE)/Makefile.include")
-					
-		#os.remove(filename)
+		time.sleep(5)		
+		shutil.rmtree("../" + application_path)
 	
 def remove_unnecessary_spaces(string):
 	
@@ -97,6 +85,48 @@ def get_module_name(id):
 		return None
 	else:
 		return results[0]["name"]
+	
+def create_directories(path):
+	
+	try:
+		os.makedirs(path)
+
+	except OSError as e:
+
+		if e.errno != errno.EEXIST:
+			raise
+			
+def write_makefile(device, modules):
+	
+	filename = "Makefile"
+	with open(filename, "w") as makefile:
+
+		makefile.write("APPLICATION = generated_test_application")
+		makefile.write("\n\n")
+
+		# TODO: check, if device is in database!!!
+		makefile.write("BOARD ?= {!s}".format(device))
+		makefile.write("\n\n")
+
+		makefile.write("RIOTBASE ?= $(CURDIR)/../..")
+		makefile.write("\n\n")
+
+		for module in modules:
+			module_name = get_module_name(module)
+
+			if module_name is None:
+				print "error while reading modules from database"
+				break
+
+			else :
+				makefile.write("USEMODULE += {!s}\n".format(module_name))
+
+		makefile.write("\n")
+		makefile.write("include $(RIOTBASE)/Makefile.include")
+		
+def execute_makefile():
+	
+	return
 
 if __name__ == "__main__":
 	main(sys.argv[1])

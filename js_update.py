@@ -39,7 +39,7 @@ def main():
 			javascript_file.write(content_string_end)
 
 
-	except IOError, e:
+	except IOError as e:
 		print e
 
 
