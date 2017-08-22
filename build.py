@@ -44,7 +44,7 @@ def main(cmd):
 		print "no module selected!"
 		
 	else:
-
+		
 		parent_path = "RIOT/generated_by_riotam/"
 		# unique application directory name, TODO: using locks to be safe
 		application_path = "application{!s}/".format(time.time())
@@ -56,8 +56,9 @@ def main(cmd):
 		write_makefile(device, modules)
 		
 		execute_makefile()
-					
-		time.sleep(5)		
+		
+		# delete temporary directory after finished build
+		time.sleep(5)
 		shutil.rmtree("../" + application_path)
 	
 def remove_unnecessary_spaces(string):
@@ -67,19 +68,25 @@ def remove_unnecessary_spaces(string):
 		
 	return string
 
-def get_module_name(id):
+def init_db():
 	
+	global db
 	db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.db_config["passwd"], config.db_config["db"])
 
 	# cursor object to execute queries
+	global db_cursor
 	db_cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+	
+def close_db():
+	
+	db_cursor.close()
+	db.close()
 
+def get_module_name(id):
+	
 	db_cursor.execute("SELECT name FROM modules WHERE id=%s", (id,))
 	results = db_cursor.fetchall()
 
-	db_cursor.close()
-	db.close()
-	
 	if len(results) != 1:
 		"error in database: len(results != 1)"
 		return None
@@ -111,6 +118,8 @@ def write_makefile(device, modules):
 		makefile.write("RIOTBASE ?= $(CURDIR)/../..")
 		makefile.write("\n\n")
 
+		init_db()
+		
 		for module in modules:
 			module_name = get_module_name(module)
 
@@ -123,6 +132,8 @@ def write_makefile(device, modules):
 
 		makefile.write("\n")
 		makefile.write("include $(RIOTBASE)/Makefile.include")
+		
+		close_db()
 		
 def execute_makefile():
 	
