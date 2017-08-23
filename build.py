@@ -1,6 +1,9 @@
-import os, errno, sys, time, shutil
+import os, errno, sys, time, shutil, subprocess
 import db_config as config
 import MySQLdb
+
+db = None
+db_cursor = None
 
 # enum-like construct
 class ArgumentMode:
@@ -54,7 +57,8 @@ def main(cmd):
 		
 		write_makefile(device, modules, full_path)
 		
-		execute_makefile(full_path)
+		#execute_makefile(full_path)
+		execute_makefile("RIOT/generated_by_riotam/test1")
 		
 		# delete temporary directory after finished build
 		time.sleep(5)
@@ -136,9 +140,15 @@ def write_makefile(device, modules, path):
 		
 def execute_makefile(path):
 	
-	#make_output = subprocess.check_output(["make"])
+	# make does preserve the path when changing via "--directory=dir"
+	
+	proc = subprocess.Popen(["make", "--directory={!s}".format(path)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+	print proc.communicate()[0].replace("\n", "<br>")
 	
 	return
 
 if __name__ == "__main__":
+	
+	print "args: " + sys.argv[1]
+	
 	main(sys.argv[1])
