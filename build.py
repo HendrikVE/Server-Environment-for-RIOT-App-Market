@@ -60,6 +60,9 @@ def main(cmd):
 		#execute_makefile(full_path)
 		execute_makefile("RIOT/generated_by_riotam/test1")
 		
+		# using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
+		print "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
+		
 		# delete temporary directory after finished build
 		time.sleep(5)
 		shutil.rmtree(full_path)
