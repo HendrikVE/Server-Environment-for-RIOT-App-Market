@@ -20,7 +20,7 @@ try:
 
 		db.commit()
 	
-except Exception, e:
+except Exception as e:
 	print e
 
 try:
@@ -33,7 +33,7 @@ try:
 
 		db.commit()
 
-except Exception, e:
+except Exception as e:
 	print e
 
 db_cursor.close()

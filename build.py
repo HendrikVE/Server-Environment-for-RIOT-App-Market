@@ -1,4 +1,6 @@
 import os, errno, sys, time, shutil, subprocess
+import json, base64
+from shutil import copyfile
 import db_config as config
 import MySQLdb
 
@@ -8,6 +10,11 @@ db_cursor = None
 # enum-like construct
 class ArgumentMode:
 	Modules, Device = range(2)
+	
+build_result = {
+	"cmd_output" : 	"",
+	"output_file" : None
+}
 
 def main(cmd):
 	
@@ -30,7 +37,7 @@ def main(cmd):
 		new_mode = switcher.get(arg, None)
 		
 		if current_mode is None and new_mode is None:
-			print "error, wrong commands"
+			build_result["cmd_output"] += "error, wrong commands"
 			break
 			
 		elif new_mode is not None:
@@ -44,28 +51,42 @@ def main(cmd):
 				device = arg
 				
 	if len(modules) == 0:
-		print "no module selected!"
+		build_result["cmd_output"] += "no module selected!"
 		
 	else:
 		
 		parent_path = "RIOT/generated_by_riotam/"
 		# unique application directory name, TODO: using locks to be safe
-		application_path = "application{!s}/".format(time.time())
+		application_name = "application{!s}".format(time.time())
+		application_path = application_name + "/"
 		full_path = parent_path + application_path
 		
 		create_directories(full_path)
 		
-		write_makefile(device, modules, full_path)
+		write_makefile(device, modules, application_name, full_path)
 		
-		#execute_makefile(full_path)
-		execute_makefile("RIOT/generated_by_riotam/test1")
+		# just for testing!
+		copyfile("main.c", full_path + "main.c")
+		
+		execute_makefile(full_path)
+		
+		try:
+			file_extension = ".elf" # or .hex
+			path_to_binary = full_path + "bin/" + device + "/" + application_name + file_extension
+			
+			with open(path_to_binary, "rb") as output_file:
+				build_result["output_file"] = base64.b64encode(output_file.read())
+			
+		except Exception as e:
+			build_result["cmd_output"] += path_to_binary + " not found"
 		
 		# using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
-		print "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
+		#build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
 		
 		# delete temporary directory after finished build
-		time.sleep(5)
 		shutil.rmtree(full_path)
+		
+	print json.dumps(build_result)
 	
 def remove_unnecessary_spaces(string):
 	
@@ -109,12 +130,12 @@ def create_directories(path):
 		if e.errno != errno.EEXIST:
 			raise
 			
-def write_makefile(device, modules, path):
+def write_makefile(device, modules, application_name, path):
 	
 	filename = "Makefile"
 	with open(path + filename, "w") as makefile:
 
-		makefile.write("APPLICATION = generated_test_application")
+		makefile.write("APPLICATION = " + application_name)
 		makefile.write("\n\n")
 
 		# TODO: check, if device is in database!!!
@@ -130,7 +151,7 @@ def write_makefile(device, modules, path):
 			module_name = get_module_name(module)
 
 			if module_name is None:
-				print "error while reading modules from database"
+				build_result["cmd_output"] += "error while reading modules from database"
 				break
 
 			else :
@@ -146,12 +167,12 @@ def execute_makefile(path):
 	# make does preserve the path when changing via "--directory=dir"
 	
 	proc = subprocess.Popen(["make", "--directory={!s}".format(path)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	print proc.communicate()[0].replace("\n", "<br>")
+	build_result["cmd_output"] += proc.communicate()[0].replace("\n", "<br>")
 	
 	return
 
 if __name__ == "__main__":
 	
-	print "args: " + sys.argv[1]
+	#build_result["cmd_output"] += "args: " + sys.argv[1]
 	
 	main(sys.argv[1])
