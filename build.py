@@ -1,6 +1,7 @@
+#!/usr/bin/env python
 import os, errno, sys, time, shutil, subprocess
-import json, base64
 from shutil import copyfile
+import json, base64
 import db_config as config
 import MySQLdb
 
@@ -13,7 +14,10 @@ class ArgumentMode:
 	
 build_result = {
 	"cmd_output" : 	"",
-	"output_file" : None
+	"device" : None,
+	"application_name" : "application",
+	"output_file" : None,
+	"output_file_extension" : None
 }
 
 def main(cmd):
@@ -50,6 +54,8 @@ def main(cmd):
 			elif current_mode == ArgumentMode.Device:
 				device = arg
 				
+	build_result["device"] = device
+				
 	if len(modules) == 0:
 		build_result["cmd_output"] += "no module selected!"
 		
@@ -60,6 +66,8 @@ def main(cmd):
 		application_name = "application{!s}".format(time.time())
 		application_path = application_name + "/"
 		full_path = parent_path + application_path
+		
+		build_result["application_name"] = application_name
 		
 		create_directories(full_path)
 		
@@ -72,6 +80,8 @@ def main(cmd):
 		
 		try:
 			file_extension = ".elf" # or .hex
+			build_result["output_file_extension"] = file_extension
+			
 			path_to_binary = full_path + "bin/" + device + "/" + application_name + file_extension
 			
 			with open(path_to_binary, "rb") as output_file:
@@ -172,7 +182,5 @@ def execute_makefile(path):
 	return
 
 if __name__ == "__main__":
-	
-	#build_result["cmd_output"] += "args: " + sys.argv[1]
 	
 	main(sys.argv[1])
