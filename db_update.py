@@ -65,7 +65,13 @@ def get_description(path):
 	
 	try:
 		with open(path) as file:
-			description = file.read()
+			for line in file:
+				if "@brief" in line:
+					index = line.find("@brief") + len("@brief")
+					description = line[index:].strip()
+					break
+					
+				
 	except IOError:
 		# ignore missing doc.txt
 		return None
