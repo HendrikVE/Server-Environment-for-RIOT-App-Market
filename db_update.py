@@ -38,7 +38,12 @@ def update_modules():
 				if item == "include":
 					continue
 
+				# try rule 1
 				description = get_description(path + item + "/doc.txt")
+				
+				# try rule 2
+				if description is None:
+					description = get_description(path + item + "/" + item + ".c")
 				
 				sql = "INSERT INTO modules (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
 				db_cursor.execute(sql, (item, path + item + "/", description, module_directory))
