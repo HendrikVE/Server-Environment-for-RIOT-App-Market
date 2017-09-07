@@ -2,7 +2,7 @@
 
 # script to update main.js in riotam-website/
 
-import db_config as config
+import config.db_config as config
 import MySQLdb
 import os
 

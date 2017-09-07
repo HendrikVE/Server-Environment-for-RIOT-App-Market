@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
 from shutil import copytree, ignore_patterns, rmtree
+import config.strip_config as config
 
 def main():
     
     try:
-        copytree("RIOT", "RIOT_stripped", ignore=ignore_patterns(".*", "doc", "tests", "generated_by_riotam"))
+        copytree("RIOT", "RIOT_stripped", ignore=config.ignore_patterns)
         
         path = "RIOT_stripped/Makefile.include"
         file_content = []
@@ -18,8 +19,6 @@ def main():
             
         with open(path, "w") as makefile:
             for line in file_content:
-                
-                print line
                 
                 if "flash: all" in line:
                     makefile.write(line.replace(" all", ""))
