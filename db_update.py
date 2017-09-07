@@ -38,17 +38,8 @@ def update_modules():
 				# ignoring include directories
 				if item == "include":
 					continue
-
-				# try rule 1
-				description = get_description(path + item + "/doc.txt")
-				
-				# try rule 2
-				if description is None:
-					description = get_description(path + item + "/" + item + ".c")
 					
-				# try rule 3
-				if description is None:
-					description = get_description(path + item + "/" + "main.c")
+				description = get_description(path + item + "/", item)
 					
 				module_name = get_name(path + item + "/", item)
 				
@@ -86,17 +77,8 @@ def update_applications():
 				# ignoring include directories
 				if item == "include":
 					continue
-
-				# try rule 1
-				description = get_description(path + item + "/doc.txt")
-				
-				# try rule 2
-				if description is None:
-					description = get_description(path + item + "/" + item + ".c")
 					
-				# try rule 3
-				if description is None:
-					description = get_description(path + item + "/" + "main.c")
+				description = get_description(path + item + "/", item)
 					
 				application_name = get_name(path + item + "/", item)
 				
@@ -105,27 +87,42 @@ def update_applications():
 
 	db.commit()
 
-def get_description(path):
+def get_description(path, item):
 	
-	description = ""
+	def get_description_helper(path):
+		
+		description = ""
 	
-	try:
-		with open(path) as file:
-			for line in file:
-				if "@brief" in line:
-					index = line.find("@brief") + len("@brief")
-					description = line[index:].strip()
-					break
-					
-				
-	except IOError:
-		# ignore missing doc.txt
-		return None
+		try:
+			with open(path) as file:
+				for line in file:
+					if "@brief" in line:
+						index = line.find("@brief") + len("@brief")
+						description = line[index:].strip()
+						break
+
+
+		except IOError:
+			# ignore missing doc.txt
+			return None
+
+		if description == "":
+			description = None
+			
+		return description
 		
-	if description == "":
-		description = None
+	# try rule 1
+	description = get_description_helper(path + "doc.txt")
+
+	# try rule 2
+	if description is None:
+		description = get_description_helper(path + item + ".c")
+
+	# try rule 3
+	if description is None:
+		description = get_description_helper(path + "main.c")
 		
-	return description  
+	return description
 
 def get_name(path, application_directory):
 	
