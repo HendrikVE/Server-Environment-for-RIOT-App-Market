@@ -44,9 +44,11 @@ def update_modules():
 				# try rule 2
 				if description is None:
 					description = get_description(path + item + "/" + item + ".c")
+					
+				application_name = get_application_name(path + item + "/", item)
 				
 				sql = "INSERT INTO modules (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
-				db_cursor.execute(sql, (item, path + item + "/", description, module_directory))
+				db_cursor.execute(sql, (application_name, path + item + "/", description, module_directory))
 
 	db.commit()
 	
@@ -85,6 +87,34 @@ def get_description(path):
 		description = None
 		
 	return description  
+
+def get_application_name(path, application_directory):
+	
+	name = ""
+	
+	try:
+		with open(path + "Makefile") as makefile:
+			for line in makefile:
+				
+				line = line.replace(" ", "")
+				
+				if "APPLICATION=" in line:
+					index = line.find("APPLICATION=") + len("APPLICATION=")
+					name = line[index:]
+					break
+					
+				elif "PKG_NAME=" in line:
+					index = line.find("PKG_NAME=") + len("PKG_NAME=")
+					name = line[index:]
+					break
+	
+	except IOError:
+		return application_directory
+	
+	if name == "":
+		name = application_directory
+	
+	return name
 
 if __name__ == "__main__":
 	main()

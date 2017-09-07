@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os, errno, sys, time, shutil, subprocess
-from shutil import copyfile
+from shutil import copyfile, copytree
+import tempfile
 import json, base64
 import db_config as config
 import MySQLdb
@@ -17,7 +18,9 @@ build_result = {
 	"device" : None,
 	"application_name" : "application",
 	"output_file" : None,
-	"output_file_extension" : None
+	"output_file_extension" : None,
+	"output_archive" : None,
+	"output_archive_extension" : None
 }
 
 def main(cmd):
@@ -63,7 +66,8 @@ def main(cmd):
 		
 		parent_path = "RIOT/generated_by_riotam/"
 		# unique application directory name, TODO: using locks to be safe
-		application_name = "application{!s}".format(time.time())
+		ticket_id = time.time()
+		application_name = "application{!s}".format(ticket_id)
 		application_path = application_name + "/"
 		full_path = parent_path + application_path
 		
@@ -79,16 +83,32 @@ def main(cmd):
 		execute_makefile(full_path)
 		
 		try:
-			file_extension = ".elf" # or .hex
+			file_extension = "elf" # TODO: or hex
 			build_result["output_file_extension"] = file_extension
 			
-			path_to_binary = full_path + "bin/" + device + "/" + application_name + file_extension
+			path_binary = full_path + "bin/" + device + "/" + application_name + "." + file_extension
 			
-			with open(path_to_binary, "rb") as output_file:
+			with open(path_binary, "rb") as output_file:
 				build_result["output_file"] = base64.b64encode(output_file.read())
+			"""	
+			try:
+				path_temporary_directory = get_temporary_directory(ticket_id)
+				copytree("RIOT_stripped/", path_temporary_directory)
+			
+			except Exception as e:
+				build_result["cmd_output"] += str(e)
+			"""
+			archieve_extension = "zip"
+			build_result["output_archive_extension"] = archieve_extension
+			
+			#shutil.make_archive("RIOT_stripped", archieve_extension, "RIOT_stripped")
+
+			with open("RIOT_stripped" + "." + archieve_extension, "rb") as output_archive:
+				build_result["output_archive"] = base64.b64encode(output_archive.read())
+			
 			
 		except Exception as e:
-			build_result["cmd_output"] += path_to_binary + " not found"
+			build_result["cmd_output"] += path_binary + " not found"
 		
 		# using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
 		#build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
@@ -97,6 +117,10 @@ def main(cmd):
 		shutil.rmtree(full_path)
 		
 	print json.dumps(build_result)
+	
+def get_temporary_directory(ticket_id):
+	
+	return tempfile.gettempdir() + "/riotam/{!s}/".format(ticket_id)
 	
 def remove_unnecessary_spaces(string):
 	
