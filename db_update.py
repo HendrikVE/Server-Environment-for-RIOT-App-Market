@@ -18,6 +18,7 @@ def main():
 
 	update_modules()
 	update_devices()
+	update_applications()
 
 	db_cursor.close()
 	db.close()
@@ -45,10 +46,14 @@ def update_modules():
 				if description is None:
 					description = get_description(path + item + "/" + item + ".c")
 					
-				application_name = get_application_name(path + item + "/", item)
+				# try rule 3
+				if description is None:
+					description = get_description(path + item + "/" + "main.c")
+					
+				module_name = get_name(path + item + "/", item)
 				
 				sql = "INSERT INTO modules (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
-				db_cursor.execute(sql, (application_name, path + item + "/", description, module_directory))
+				db_cursor.execute(sql, (module_name, path + item + "/", description, module_directory))
 
 	db.commit()
 	
@@ -64,6 +69,40 @@ def update_devices():
 			sql = "INSERT INTO devices (display_name, internal_name, flash_program) VALUES (%s, %s, %s);"
 			db_cursor.execute(sql, (item, item, "openocd"))
 			
+	db.commit()
+	
+def update_applications():
+	
+	db_cursor.execute("TRUNCATE applications")
+	
+	for i in range(len(config.application_directories)):
+
+		application_directory = config.application_directories[i]
+		path = config.path_root + application_directory + "/"
+
+		for item in os.listdir(path):
+			if not os.path.isfile(os.path.join(path, item)):
+
+				# ignoring include directories
+				if item == "include":
+					continue
+
+				# try rule 1
+				description = get_description(path + item + "/doc.txt")
+				
+				# try rule 2
+				if description is None:
+					description = get_description(path + item + "/" + item + ".c")
+					
+				# try rule 3
+				if description is None:
+					description = get_description(path + item + "/" + "main.c")
+					
+				application_name = get_name(path + item + "/", item)
+				
+				sql = "INSERT INTO applications (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
+				db_cursor.execute(sql, (application_name, path + item + "/", description, application_directory))
+
 	db.commit()
 
 def get_description(path):
@@ -88,7 +127,7 @@ def get_description(path):
 		
 	return description  
 
-def get_application_name(path, application_directory):
+def get_name(path, application_directory):
 	
 	name = ""
 	

@@ -10,7 +10,11 @@ db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.
 # cursor object to execute queries
 db_cursor = db.cursor()
 
-sql_file_list = ["database/modules.sql", "database/devices.sql", "database/applications.sql"]
+sql_file_list = [
+	"database/modules.sql",
+	"database/devices.sql",
+	"database/applications.sql"
+]
 
 for sql_file_path in sql_file_list:
 	

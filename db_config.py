@@ -15,3 +15,7 @@ module_directories = [
 	"drivers",
 	"tests"
 ]
+
+application_directories = [
+	"examples"
+]
