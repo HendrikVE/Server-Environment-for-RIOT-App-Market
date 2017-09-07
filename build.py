@@ -5,6 +5,7 @@ import tempfile
 import json, base64
 import db_config as config
 import MySQLdb
+import logging
 
 db = None
 db_cursor = None
@@ -24,6 +25,8 @@ build_result = {
 }
 
 def main(cmd):
+	
+	logging.basicConfig(filename = "log/build_log.txt", format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
 	
 	cmd = remove_unnecessary_spaces(cmd)
 	
@@ -108,6 +111,7 @@ def main(cmd):
 			
 			
 		except Exception as e:
+			logging.error(str(e))
 			build_result["cmd_output"] += path_binary + " not found"
 		
 		# using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
@@ -162,6 +166,7 @@ def create_directories(path):
 	except OSError as e:
 
 		if e.errno != errno.EEXIST:
+			logging.error(str(e))
 			raise
 			
 def write_makefile(device, modules, application_name, path):
