@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from shutil import copytree, ignore_patterns, rmtree
+from shutil import copytree, rmtree
 import config.strip_config as config
 
 def main():
