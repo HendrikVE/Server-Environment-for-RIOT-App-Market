@@ -3,7 +3,7 @@ import os, errno, sys, time, shutil, subprocess
 from shutil import copyfile, copytree
 import tempfile
 import json, base64
-import db_config as config
+import config.db_config as config
 import MySQLdb
 import logging
 
@@ -25,8 +25,6 @@ build_result = {
 }
 
 def main(cmd):
-	
-	logging.basicConfig(filename = "log/build_log.txt", format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
 	
 	cmd = remove_unnecessary_spaces(cmd)
 	
@@ -93,26 +91,26 @@ def main(cmd):
 			
 			with open(path_binary, "rb") as output_file:
 				build_result["output_file"] = base64.b64encode(output_file.read())
-			"""	
+				
 			try:
 				path_temporary_directory = get_temporary_directory(ticket_id)
 				copytree("RIOT_stripped/", path_temporary_directory)
 			
 			except Exception as e:
+				logging.error(str(e))
 				build_result["cmd_output"] += str(e)
-			"""
+				
 			archieve_extension = "zip"
 			build_result["output_archive_extension"] = archieve_extension
 			
 			#shutil.make_archive("RIOT_stripped", archieve_extension, "RIOT_stripped")
 
-			with open("RIOT_stripped" + "." + archieve_extension, "rb") as output_archive:
-				build_result["output_archive"] = base64.b64encode(output_archive.read())
+			"""with open("RIOT_stripped" + "." + archieve_extension, "rb") as output_archive:
+				build_result["output_archive"] = base64.b64encode(output_archive.read())"""
 			
 			
 		except Exception as e:
-			logging.error(str(e))
-			build_result["cmd_output"] += path_binary + " not found"
+			build_result["cmd_output"] += "something went wrong on server side"
 		
 		# using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
 		#build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
@@ -124,7 +122,7 @@ def main(cmd):
 	
 def get_temporary_directory(ticket_id):
 	
-	return tempfile.gettempdir() + "/riotam/{!s}/".format(ticket_id)
+	return "tmp/{!s}/".format(ticket_id)
 	
 def remove_unnecessary_spaces(string):
 	
@@ -212,4 +210,11 @@ def execute_makefile(path):
 
 if __name__ == "__main__":
 	
-	main(sys.argv[1])
+	logging.basicConfig(filename = "log/build_log.txt", format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
+	
+	try:
+		main(sys.argv[1])
+		
+	except Exception as e:
+		logging.error(str(e), exc_info=True)
+	
