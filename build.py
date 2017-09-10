@@ -104,11 +104,6 @@ def main(cmd):
 			binary_dest_path = binary_path.replace("RIOT/", "RIOT_stripped/")
 			makefile_dest_path = full_path.replace("RIOT/", "RIOT_stripped/")
 			
-			#remove file from path, because it shouldnt be created as directory
-			index = binary_dest_path.rindex("/")
-			path_to_create = binary_dest_path[:index]
-			create_directories(path_to_create)
-			
 			single_copy_operations = [
 				(binary_path, binary_dest_path),
 				(full_path + "Makefile", makefile_dest_path + "Makefile")
@@ -138,7 +133,15 @@ def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations,
 		copytree(src_path, dest_path)
 		
 		for operation in single_copy_operations:
-			copyfile(operation[0], temporary_directory + operation[1])
+			
+			
+			#remove file from path, because it shouldnt be created as directory
+			copy_dest_path = temporary_directory + operation[1]
+			index = copy_dest_path.rindex("/")
+			path_to_create = copy_dest_path[:index]
+			create_directories(path_to_create)
+			
+			copyfile(operation[0], copy_dest_path)
 		
 		return dest_path
 	
