@@ -73,6 +73,8 @@ def main(cmd):
 		application_path = application_name + "/"
 		full_path = parent_path + application_path
 		
+		temporary_directory = get_temporary_directory(ticket_id)
+		
 		build_result["application_name"] = application_name
 		
 		create_directories(full_path)
@@ -97,8 +99,6 @@ def main(cmd):
 			""" ARCHIVE FILE """
 			archieve_extension = "tar"
 			build_result["output_archive_extension"] = archieve_extension
-			
-			temporary_directory = get_temporary_directory(ticket_id)
 			
 			# [(src_path, dest_path)]
 			binary_dest_path = binary_path.replace("RIOT/", "RIOT_stripped/")
@@ -125,8 +125,9 @@ def main(cmd):
 		# using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
 		#build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
 		
-		# delete temporary directory after finished build
+		# delete temporary directories after finished build
 		rmtree(full_path)
+		rmtree(temporary_directory)
 		
 	print json.dumps(build_result)
 	
