@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import os, errno, sys, time, shutil, subprocess
 from shutil import copyfile, copytree
-import tempfile
 import json, base64
 import config.db_config as config
 import MySQLdb
 import logging
+import tarfile
+import glob
 
 db = None
 db_cursor = None
@@ -84,30 +85,25 @@ def main(cmd):
 		execute_makefile(full_path)
 		
 		try:
+			""" IMAGE FILE """
 			file_extension = "elf" # TODO: or hex
 			build_result["output_file_extension"] = file_extension
 			
 			path_binary = full_path + "bin/" + device + "/" + application_name + "." + file_extension
+			build_result["output_file"] = file_as_base64(path_binary)
 			
-			with open(path_binary, "rb") as output_file:
-				build_result["output_file"] = base64.b64encode(output_file.read())
-				
-			try:
-				path_temporary_directory = get_temporary_directory(ticket_id)
-				copytree("RIOT_stripped/", path_temporary_directory)
 			
-			except Exception as e:
-				logging.error(str(e))
-				build_result["cmd_output"] += str(e)
-				
-			archieve_extension = "zip"
+			
+			""" ARCHIVE FILE """
+			archieve_extension = "tar"
 			build_result["output_archive_extension"] = archieve_extension
 			
-			#shutil.make_archive("RIOT_stripped", archieve_extension, "RIOT_stripped")
-
-			"""with open("RIOT_stripped" + "." + archieve_extension, "rb") as output_archive:
-				build_result["output_archive"] = base64.b64encode(output_archive.read())"""
+			temporary_directory = get_temporary_directory(ticket_id)
 			
+			stripped_repo_path = prepare_stripped_repo("RIOT_stripped/", temporary_directory + "RIOT_stripped/")
+			archive_path = zip_repo(stripped_repo_path, temporary_directory + "RIOT_stripped.tar")
+			
+			build_result["output_archive"] = file_as_base64(archive_path)
 			
 		except Exception as e:
 			build_result["cmd_output"] += "something went wrong on server side"
@@ -119,6 +115,36 @@ def main(cmd):
 		shutil.rmtree(full_path)
 		
 	print json.dumps(build_result)
+	
+def prepare_stripped_repo(src_path, dest_path):
+	
+	try:
+		copytree(src_path, dest_path)
+		return dest_path
+	
+	except Exception as e:
+		logging.error(str(e))
+	
+	return None
+	
+def zip_repo(src_path, dest_path):
+	
+	try:
+		tar = tarfile.open(dest_path, "w:gz")
+		for file_name in glob.glob(os.path.join(src_path, "*")):
+			tar.add(file_name, os.path.basename(file_name))
+
+		tar.close()
+		
+	except Exception as e:
+		logging.error(str(e))
+	
+	return dest_path
+	
+def file_as_base64(path):
+	
+	with open(path, "rb") as file:
+		return base64.b64encode(file.read())
 	
 def get_temporary_directory(ticket_id):
 	
