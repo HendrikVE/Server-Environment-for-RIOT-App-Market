@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import os, errno, sys, time, shutil, subprocess
-from shutil import copyfile, copytree
+import os, errno, sys, time, subprocess
+from shutil import copyfile, copytree, rmtree
 import json, base64
 import config.db_config as config
 import MySQLdb
@@ -89,8 +89,8 @@ def main(cmd):
 			file_extension = "elf" # TODO: or hex
 			build_result["output_file_extension"] = file_extension
 			
-			path_binary = full_path + "bin/" + device + "/" + application_name + "." + file_extension
-			build_result["output_file"] = file_as_base64(path_binary)
+			binary_path = full_path + "bin/" + device + "/" + application_name + "." + file_extension
+			build_result["output_file"] = file_as_base64(binary_path)
 			
 			
 			
@@ -100,7 +100,21 @@ def main(cmd):
 			
 			temporary_directory = get_temporary_directory(ticket_id)
 			
-			stripped_repo_path = prepare_stripped_repo("RIOT_stripped/", temporary_directory + "RIOT_stripped/")
+			# [(src_path, dest_path)]
+			binary_dest_path = binary_path.replace("RIOT/", "RIOT_stripped/")
+			makefile_dest_path = full_path.replace("RIOT/", "RIOT_stripped/")
+			
+			#remove file from path, because it shouldnt be created as directory
+			index = binary_dest_path.rindex("/")
+			path_to_create = binary_dest_path[:index]
+			create_directories(path_to_create)
+			
+			single_copy_operations = [
+				(binary_path, binary_dest_path),
+				(full_path + "Makefile", makefile_dest_path + "Makefile")
+			]
+			
+			stripped_repo_path = prepare_stripped_repo("RIOT_stripped/", temporary_directory, single_copy_operations, device)
 			archive_path = zip_repo(stripped_repo_path, temporary_directory + "RIOT_stripped.tar")
 			
 			build_result["output_archive"] = file_as_base64(archive_path)
@@ -112,14 +126,19 @@ def main(cmd):
 		#build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
 		
 		# delete temporary directory after finished build
-		shutil.rmtree(full_path)
+		rmtree(full_path)
 		
 	print json.dumps(build_result)
 	
-def prepare_stripped_repo(src_path, dest_path):
+def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations, device):
 	
 	try:
+		dest_path = temporary_directory + "RIOT_stripped/"
 		copytree(src_path, dest_path)
+		
+		for operation in single_copy_operations:
+			copyfile(operation[0], temporary_directory + operation[1])
+		
 		return dest_path
 	
 	except Exception as e:

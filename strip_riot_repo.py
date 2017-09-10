@@ -1,11 +1,15 @@
 #!/usr/bin/python
 
 from shutil import copytree, rmtree
+import os
 import config.strip_config as config
 
 def main():
     
     try:
+        if os.path.exists("RIOT_stripped"):
+            rmtree("RIOT_stripped")
+            
         copytree("RIOT", "RIOT_stripped", ignore=config.ignore_patterns)
         
         path = "RIOT_stripped/Makefile.include"
