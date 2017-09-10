@@ -11,25 +11,25 @@ db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.
 db_cursor = db.cursor()
 
 sql_file_list = [
-	"database/modules.sql",
-	"database/devices.sql",
-	"database/applications.sql"
+    "database/modules.sql",
+    "database/devices.sql",
+    "database/applications.sql"
 ]
 
 for sql_file_path in sql_file_list:
 	
-	try:
-		with open(sql_file_path, "r") as sql_file:
+    try:
+        with open(sql_file_path, "r") as sql_file:
 
-			lines = sql_file.readlines()
+            lines = sql_file.readlines()
 
-			for sql_query in lines:
-				db_cursor.execute(sql_query)
+            for sql_query in lines:
+                db_cursor.execute(sql_query)
 
-			db.commit()
+            db.commit()
 
-	except Exception as e:
-		print e
+    except Exception as e:
+        print e
 
 db_cursor.close()
 db.close()
