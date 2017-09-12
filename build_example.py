@@ -122,8 +122,8 @@ def main(cmd):
         #build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
         
         # delete temporary directories after finished build
-        #rmtree(full_path)
-        #rmtree(temporary_directory)
+        rmtree(full_path)
+        rmtree(temporary_directory)
         
     print json.dumps(build_result)
     
