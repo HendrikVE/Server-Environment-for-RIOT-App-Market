@@ -38,7 +38,7 @@ def main(cmd):
     }
     
     modules = []
-    device = "native"
+    device = None
     
     current_mode  = None
     for arg in args:
@@ -59,12 +59,15 @@ def main(cmd):
             elif current_mode == ArgumentMode.Device:
                 device = arg
                 
-    build_result["device"] = device
-                
     if len(modules) == 0:
         build_result["cmd_output"] += "no module selected!"
         
+    elif device is None:
+        build_result["cmd_output"] += "no device specified!"
+        
     else:
+        
+        build_result["device"] = device
         
         parent_path = "RIOT/generated_by_riotam/"
         # unique application directory name, TODO: using locks to be safe
@@ -240,8 +243,6 @@ def write_makefile(device, modules, application_name, path):
 
         makefile.write("RIOTBASE ?= $(CURDIR)/../..")
         makefile.write("\n\n")
-
-        init_db()
         
         for module in modules:
             module_name = get_module_name(module)
@@ -255,8 +256,6 @@ def write_makefile(device, modules, application_name, path):
 
         makefile.write("\n")
         makefile.write("include $(RIOTBASE)/Makefile.include")
-        
-        close_db()
         
 def execute_makefile(path):
     
@@ -272,7 +271,11 @@ if __name__ == "__main__":
     logging.basicConfig(filename = "log/build_log.txt", format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
     
     try:
+        init_db()
+        
         main(sys.argv[1])
+        
+        close_db()
         
     except Exception as e:
         logging.error(str(e), exc_info=True)

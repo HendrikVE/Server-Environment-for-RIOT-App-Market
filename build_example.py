@@ -13,7 +13,7 @@ db_cursor = None
 
 # enum-like construct
 class ArgumentMode:
-    Modules, Device = range(2)
+    Applications, Device = range(2)
     
 build_result = {
     "cmd_output" :     "",
@@ -33,12 +33,12 @@ def main(cmd):
     
     # dictionary as replacement for switch-case
     switcher = {
-        "--modules": ArgumentMode.Modules,
+        "--application": ArgumentMode.Applications,
         "--device": ArgumentMode.Device,
     }
     
-    modules = []
-    device = "native"
+    applicationID = None
+    device = None
     
     current_mode  = None
     for arg in args:
@@ -53,18 +53,21 @@ def main(cmd):
             current_mode = new_mode
             
         else:
-            if current_mode == ArgumentMode.Modules:
-                modules.append(arg)
+            if current_mode == ArgumentMode.Applications:
+                applicationID = arg
                 
             elif current_mode == ArgumentMode.Device:
                 device = arg
                 
-    build_result["device"] = device
-                
-    if len(modules) == 0:
+    if applicationID is None:
         build_result["cmd_output"] += "no module selected!"
         
+    elif device is None:
+        build_result["cmd_output"] += "no device specified!"
+        
     else:
+        
+        build_result["device"] = device
         
         parent_path = "RIOT/generated_by_riotam/"
         # unique application directory name, TODO: using locks to be safe
@@ -77,14 +80,12 @@ def main(cmd):
         
         build_result["application_name"] = application_name
         
-        create_directories(full_path)
+        application_display_name = get_application_name(applicationID)
+        copytree("RIOT/examples/" + application_display_name + "/", full_path)
         
-        write_makefile(device, modules, application_name, full_path)
+        replace_application_name(full_path + "Makefile", application_name, device)
         
-        # just for testing!
-        copyfile("main.c", full_path + "main.c")
-        
-        execute_makefile(full_path)
+        execute_makefile(full_path, device)
         
         try:
             """ IMAGE FILE """
@@ -121,10 +122,32 @@ def main(cmd):
         #build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
         
         # delete temporary directories after finished build
-        rmtree(full_path)
-        rmtree(temporary_directory)
+        #rmtree(full_path)
+        #rmtree(temporary_directory)
         
     print json.dumps(build_result)
+    
+def replace_application_name(path, application_name, device):
+    
+    file_content = []
+    with open(path, "r") as makefile:
+
+        lines = makefile.readlines()
+
+        for line in lines:
+            file_content.append(line)
+
+    with open(path, "w") as makefile:
+        for line in file_content:
+
+            if "APPLICATION" in line:
+                makefile.write("APPLICATION = {!s}\n".format(application_name))
+                
+            elif "BOARD" in line:
+                makefile.write("BOARD = {!s}\n".format(device))
+                
+            else:
+                makefile.write(line)
     
 def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations, device):
     
@@ -203,10 +226,10 @@ def close_db():
     
     db_cursor.close()
     db.close()
-
-def get_module_name(id):
     
-    db_cursor.execute("SELECT name FROM modules WHERE id=%s", (id,))
+def get_application_name(id):
+    
+    db_cursor.execute("SELECT name FROM applications WHERE id=%s", (id,))
     results = db_cursor.fetchall()
 
     if len(results) != 1:
@@ -225,40 +248,8 @@ def create_directories(path):
         if e.errno != errno.EEXIST:
             logging.error(str(e))
             raise
-            
-def write_makefile(device, modules, application_name, path):
-    
-    filename = "Makefile"
-    with open(path + filename, "w") as makefile:
-
-        makefile.write("APPLICATION = " + application_name)
-        makefile.write("\n\n")
-
-        # TODO: check, if device is in database!!!
-        makefile.write("BOARD ?= {!s}".format(device))
-        makefile.write("\n\n")
-
-        makefile.write("RIOTBASE ?= $(CURDIR)/../..")
-        makefile.write("\n\n")
-
-        init_db()
         
-        for module in modules:
-            module_name = get_module_name(module)
-
-            if module_name is None:
-                build_result["cmd_output"] += "error while reading modules from database"
-                break
-
-            else :
-                makefile.write("USEMODULE += {!s}\n".format(module_name))
-
-        makefile.write("\n")
-        makefile.write("include $(RIOTBASE)/Makefile.include")
-        
-        close_db()
-        
-def execute_makefile(path):
+def execute_makefile(path, device):
     
     # make does preserve the path when changing via "--directory=dir"
     
@@ -269,10 +260,14 @@ def execute_makefile(path):
 
 if __name__ == "__main__":
     
-    logging.basicConfig(filename = "log/build_log.txt", format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
+    logging.basicConfig(filename = "log/build_example_log.txt", format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
     
     try:
+        init_db()
+        
         main(sys.argv[1])
+        
+        close_db()
         
     except Exception as e:
         logging.error(str(e), exc_info=True)
