@@ -150,7 +150,8 @@ def get_name(path, application_directory):
     if name == "":
         name = application_directory
     
-    return name
+    # remove \n and stuff like that
+    return name.strip()
 
 if __name__ == "__main__":
     main()
