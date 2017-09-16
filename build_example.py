@@ -10,6 +10,7 @@ import logging
 import tarfile
 import glob
 import argparse
+import uuid
 
 db = None
 db_cursor = None
@@ -44,8 +45,10 @@ def main(argv):
     build_result["board"] = board
 
     parent_path = "RIOT/generated_by_riotam/"
-    # unique application directory name, TODO: using locks to be safe
-    ticket_id = time.time()
+
+    # unique application directory name
+    ticket_id = str(time.time()) + uuid.uuid1()
+
     application_name = "application{!s}".format(ticket_id)
     application_path = application_name + "/"
     full_path = parent_path + application_path
