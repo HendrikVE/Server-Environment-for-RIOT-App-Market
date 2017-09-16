@@ -47,7 +47,7 @@ def main(argv):
     parent_path = "RIOT/generated_by_riotam/"
 
     # unique application directory name
-    ticket_id = str(time.time()) + uuid.uuid1()
+    ticket_id = str(time.time()) + str(uuid.uuid1())
 
     application_name = "application{!s}".format(ticket_id)
     application_path = application_name + "/"
