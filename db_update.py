@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: UTF-8 -*-
 
 import config.db_config as config
 import MySQLdb
@@ -39,7 +40,7 @@ def update_modules():
                 if item == "include":
                     continue
                     
-                description = get_description(path + item + "/", item)
+                description = get_description(path, item)
                     
                 module_name = get_name(path + item + "/", item)
                 
@@ -55,7 +56,7 @@ def update_devices():
     path = config.path_root + "boards/"
 
     for item in os.listdir(path):
-        if not os.path.isfile(os.path.join(path, item)):
+        if not os.path.isfile(os.path.join(path, item)) and not item.endswith("-common"):
             
             sql = "INSERT INTO devices (display_name, internal_name, flash_program) VALUES (%s, %s, %s);"
             db_cursor.execute(sql, (item, item, "openocd"))
@@ -78,7 +79,7 @@ def update_applications():
                 if item == "include":
                     continue
                     
-                description = get_description(path + item + "/", item)
+                description = get_description(path, item)
                     
                 application_name = get_name(path + item + "/", item)
                 
@@ -95,15 +96,22 @@ def get_description(path, item):
     
         try:
             with open(path) as file:
+                
+                brief_active = False
                 for line in file:
+                    
+                    if brief_active:
+                        if not "* @" in line:
+                            description += line.replace("*", "", 1).strip()
+                        else:
+                            break
+                    
                     if "@brief" in line:
                         index = line.find("@brief") + len("@brief")
                         description = line[index:].strip()
-                        break
-
+                        brief_active = True
 
         except IOError:
-            # ignore missing doc.txt
             return None
 
         if description == "":
@@ -112,15 +120,19 @@ def get_description(path, item):
         return description
         
     # try rule 1
-    description = get_description_helper(path + "doc.txt")
-
+    description = get_description_helper(path + "include/" + item +".h")
+        
     # try rule 2
     if description is None:
-        description = get_description_helper(path + item + ".c")
+        description = get_description_helper(path + item + "/" + "doc.txt")
 
     # try rule 3
     if description is None:
-        description = get_description_helper(path + "main.c")
+        description = get_description_helper(path + item + "/" + item + ".c")
+
+    # try rule 4
+    if description is None:
+        description = get_description_helper(path + item + "/" + "main.c")
         
     return description
 

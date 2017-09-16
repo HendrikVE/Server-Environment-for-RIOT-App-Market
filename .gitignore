@@ -1,4 +1,6 @@
 *.pyc
 
+.idea/
+
 RIOT_stripped/
 RIOT_stripped.zip
