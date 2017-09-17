@@ -2,12 +2,12 @@
 # -*- coding: UTF-8 -*-
 
 import config.db_config as config
-import utility.build_utility as build_utility
+import utility.build_utility as bu
 
+import MySQLdb
 import sys, time
 from shutil import copytree, rmtree
 import json
-import MySQLdb
 import logging
 import argparse
 import uuid
@@ -53,7 +53,7 @@ def main(argv):
     application_path = application_name + "/"
     full_path = parent_path + application_path
 
-    temporary_directory = build_utility.get_temporary_directory(ticket_id)
+    temporary_directory = bu.get_temporary_directory(ticket_id)
 
     build_result["application_name"] = application_name
 
@@ -62,7 +62,7 @@ def main(argv):
 
     replace_application_name(full_path + "Makefile", application_name, board)
 
-    build_result["cmd_output"] += build_utility.execute_makefile(full_path)
+    build_result["cmd_output"] += bu.execute_makefile(full_path)
 
     try:
         """ IMAGE FILE """
@@ -70,7 +70,7 @@ def main(argv):
         build_result["output_file_extension"] = file_extension
 
         binary_path = full_path + "bin/" + board + "/" + application_name + "." + file_extension
-        build_result["output_file"] = build_utility.file_as_base64(binary_path)
+        build_result["output_file"] = bu.file_as_base64(binary_path)
 
         """ ARCHIVE FILE """
         archieve_extension = "tar"
@@ -85,14 +85,13 @@ def main(argv):
             (full_path + "Makefile", makefile_dest_path + "Makefile")
         ]
 
-        stripped_repo_path = build_utility.prepare_stripped_repo("RIOT_stripped/", temporary_directory, single_copy_operations,
-                                                   board)
-        archive_path = build_utility.zip_repo(stripped_repo_path, temporary_directory + "RIOT_stripped.tar")
+        stripped_repo_path = bu.prepare_stripped_repo("RIOT_stripped/", temporary_directory, single_copy_operations, board)
+        archive_path = bu.zip_repo(stripped_repo_path, temporary_directory + "RIOT_stripped.tar")
 
-        build_result["output_archive"] = build_utility.file_as_base64(archive_path)
+        build_result["output_archive"] = bu.file_as_base64(archive_path)
 
     except Exception as e:
-        logging.error(str(e))
+        logging.error(str(e), exc_info=True)
         build_result["cmd_output"] += "something went wrong on server side"
 
     # using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
@@ -106,7 +105,7 @@ def main(argv):
         rmtree(temporary_directory)
 
     except Exception as e:
-        logging.error(str(e))
+        logging.error(str(e), exc_info=True)
 
 
 def init_argparse():
@@ -169,8 +168,9 @@ def get_application_name(id):
     results = db_cursor.fetchall()
 
     if len(results) != 1:
-        "error in database: len(results != 1)"
+        logging.error("error in database: len(results != 1)")
         return None
+
     else:
         return results[0]["name"]
 

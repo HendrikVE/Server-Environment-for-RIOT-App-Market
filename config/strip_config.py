@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
 from shutil import ignore_patterns
 
 ignore_patterns = ignore_patterns(

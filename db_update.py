@@ -18,7 +18,7 @@ def main():
     db_cursor = db.cursor()
 
     update_modules()
-    update_devices()
+    update_boards()
     update_applications()
 
     db_cursor.close()
@@ -49,16 +49,16 @@ def update_modules():
 
     db.commit()
     
-def update_devices():
+def update_boards():
     
-    db_cursor.execute("TRUNCATE devices")
+    db_cursor.execute("TRUNCATE boards")
     
     path = config.path_root + "boards/"
 
     for item in os.listdir(path):
         if not os.path.isfile(os.path.join(path, item)) and not item.endswith("-common"):
             
-            sql = "INSERT INTO devices (display_name, internal_name, flash_program) VALUES (%s, %s, %s);"
+            sql = "INSERT INTO boards (display_name, internal_name, flash_program) VALUES (%s, %s, %s);"
             db_cursor.execute(sql, (item, item, "openocd"))
             
     db.commit()

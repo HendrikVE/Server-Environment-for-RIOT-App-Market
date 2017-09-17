@@ -25,7 +25,7 @@ def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations,
                         rmtree(path_boards + item)
 
         except Exception as e:
-            logging.error(str(e))
+            logging.error(str(e), exc_info=True)
 
         for operation in single_copy_operations:
             # remove file from path, because it shouldnt be created as directory
@@ -39,7 +39,7 @@ def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations,
         return dest_path
 
     except Exception as e:
-        logging.error(str(e))
+        logging.error(str(e), exc_info=True)
 
     return None
 
@@ -53,7 +53,7 @@ def zip_repo(src_path, dest_path):
         tar.close()
 
     except Exception as e:
-        logging.error(str(e))
+        logging.error(str(e), exc_info=True)
 
     return dest_path
 

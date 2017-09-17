@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 
 # this script will read sql statements out of files and execute them to setup the database
 
@@ -12,7 +13,7 @@ db_cursor = db.cursor()
 
 sql_file_list = [
     "database/modules.sql",
-    "database/devices.sql",
+    "database/boards.sql",
     "database/applications.sql"
 ]
 

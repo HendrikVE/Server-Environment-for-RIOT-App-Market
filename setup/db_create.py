@@ -9,8 +9,8 @@ It should be run as the root account without mysql password.
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
-import MySQLdb as db
 import db_config as config
+import MySQLdb as db
 
 
 REMOVE_DB = (
@@ -34,13 +34,13 @@ def main():
     conn = db.connect()
     cur = conn.cursor()
 
-    print('Cleanup database')
+    print("Cleanup database")
     for line in REMOVE_DB.splitlines():
         print(line)
         cur.execute(line)
     print()
 
-    print('Create database')
+    print("Create database")
     for line in CREATE_DB.splitlines():
         print(line)
         cur.execute(line)
@@ -49,5 +49,5 @@ def main():
     conn.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
