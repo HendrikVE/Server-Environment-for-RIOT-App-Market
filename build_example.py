@@ -2,13 +2,13 @@
 # -*- coding: UTF-8 -*-
 
 import config.db_config as config
-import os, errno, sys, time, subprocess
-from shutil import copyfile, copytree, rmtree
-import json, base64
+import utility.build_utility as build_utility
+
+import sys, time
+from shutil import copytree, rmtree
+import json
 import MySQLdb
 import logging
-import tarfile
-import glob
 import argparse
 import uuid
 
@@ -53,7 +53,7 @@ def main(argv):
     application_path = application_name + "/"
     full_path = parent_path + application_path
 
-    temporary_directory = get_temporary_directory(ticket_id)
+    temporary_directory = build_utility.get_temporary_directory(ticket_id)
 
     build_result["application_name"] = application_name
 
@@ -62,7 +62,7 @@ def main(argv):
 
     replace_application_name(full_path + "Makefile", application_name, board)
 
-    execute_makefile(full_path)
+    build_result["cmd_output"] += build_utility.execute_makefile(full_path)
 
     try:
         """ IMAGE FILE """
@@ -70,7 +70,7 @@ def main(argv):
         build_result["output_file_extension"] = file_extension
 
         binary_path = full_path + "bin/" + board + "/" + application_name + "." + file_extension
-        build_result["output_file"] = file_as_base64(binary_path)
+        build_result["output_file"] = build_utility.file_as_base64(binary_path)
 
         """ ARCHIVE FILE """
         archieve_extension = "tar"
@@ -85,11 +85,11 @@ def main(argv):
             (full_path + "Makefile", makefile_dest_path + "Makefile")
         ]
 
-        stripped_repo_path = prepare_stripped_repo("RIOT_stripped/", temporary_directory, single_copy_operations,
+        stripped_repo_path = build_utility.prepare_stripped_repo("RIOT_stripped/", temporary_directory, single_copy_operations,
                                                    board)
-        archive_path = zip_repo(stripped_repo_path, temporary_directory + "RIOT_stripped.tar")
+        archive_path = build_utility.zip_repo(stripped_repo_path, temporary_directory + "RIOT_stripped.tar")
 
-        build_result["output_archive"] = file_as_base64(archive_path)
+        build_result["output_archive"] = build_utility.file_as_base64(archive_path)
 
     except Exception as e:
         logging.error(str(e))
@@ -147,67 +147,6 @@ def replace_application_name(path, application_name, board):
                 makefile.write(line)
 
 
-def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations, board):
-    
-    try:
-        dest_path = temporary_directory + "RIOT_stripped/"
-        copytree(src_path, dest_path)
-        
-        try:
-            # remove all unnecessary boards
-            path_boards = dest_path + "boards/"
-            for item in os.listdir(path_boards):
-                if not os.path.isfile(os.path.join(path_boards, item)):
-                    if (item != "include") and (not "common" in item) and (item != board):
-                        rmtree(path_boards + item)
-
-        except Exception as e:
-            logging.error(str(e))
-        
-        for operation in single_copy_operations:
-            
-            #remove file from path, because it shouldnt be created as directory
-            copy_dest_path = temporary_directory + operation[1]
-            index = copy_dest_path.rindex("/")
-            path_to_create = copy_dest_path[:index]
-            create_directories(path_to_create)
-            
-            copyfile(operation[0], copy_dest_path)
-        
-        return dest_path
-    
-    except Exception as e:
-        logging.error(str(e))
-    
-    return None
-
-
-def zip_repo(src_path, dest_path):
-    
-    try:
-        tar = tarfile.open(dest_path, "w:gz")
-        for file_name in glob.glob(os.path.join(src_path, "*")):
-            tar.add(file_name, os.path.basename(file_name))
-
-        tar.close()
-        
-    except Exception as e:
-        logging.error(str(e))
-    
-    return dest_path
-
-
-def file_as_base64(path):
-    
-    with open(path, "rb") as file:
-        return base64.b64encode(file.read())
-
-
-def get_temporary_directory(ticket_id):
-    
-    return "tmp/{!s}/".format(ticket_id)
-
-
 def init_db():
     
     global db
@@ -234,28 +173,6 @@ def get_application_name(id):
         return None
     else:
         return results[0]["name"]
-
-
-def create_directories(path):
-    
-    try:
-        os.makedirs(path)
-
-    except OSError as e:
-
-        if e.errno != errno.EEXIST:
-            logging.error(str(e))
-            raise
-
-
-def execute_makefile(path):
-    
-    # make does preserve the path when changing via "--directory=dir"
-    
-    proc = subprocess.Popen(["make", "--directory={!s}".format(path)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    build_result["cmd_output"] += proc.communicate()[0].replace("\n", "<br>")
-    
-    return
 
 
 if __name__ == "__main__":
