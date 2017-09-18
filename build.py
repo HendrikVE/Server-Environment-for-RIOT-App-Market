@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-import MySQLdb
 import argparse
 import json
 import logging
+import os
 import sys
 from shutil import copyfile, rmtree
-import os
-import config.db_config as config
-import utility.build_utility as bu
 
-db = None
-db_cursor = None
+import utility.build_utility as bu
+from MyDatabase import MyDatabase
 
 build_result = {
     "cmd_output": "",
@@ -29,6 +26,8 @@ CURDIR = os.path.dirname(__file__)
 LOGFILE = os.path.join(CURDIR, "log/build_example_log.txt")
 LOGFILE = os.environ.get('BACKEND_LOGFILE', LOGFILE)
 
+db = MyDatabase()
+
 
 def main(argv):
 
@@ -40,8 +39,6 @@ def main(argv):
     except Exception as e:
         build_result["cmd_output"] += str(e)
         return
-
-    init_db()
 
     board = args.board
     modules = args.modules
@@ -71,7 +68,6 @@ def main(argv):
 
         logging.debug(main_file_content)"""
     copyfile("main.c", full_path + "main.c")
-
 
     build_result["cmd_output"] += bu.execute_makefile(full_path)
 
@@ -108,8 +104,6 @@ def main(argv):
     # using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
     # build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
 
-    close_db()
-
     # delete temporary directories after finished build
     try:
         rmtree(full_path)
@@ -143,33 +137,17 @@ def init_argparse():
     return parser
 
 
-def init_db():
+def fetch_module_name(id):
     
-    global db
-    db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.db_config["passwd"], config.db_config["db"])
+    db.query("SELECT name FROM modules WHERE id=%s", (id,))
+    names = db.fetchall()
 
-    # cursor object to execute queries
-    global db_cursor
-    db_cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-
-
-def close_db():
-    
-    db_cursor.close()
-    db.close()
-
-
-def get_module_name(id):
-    
-    db_cursor.execute("SELECT name FROM modules WHERE id=%s", (id,))
-    results = db_cursor.fetchall()
-
-    if len(results) != 1:
-        logging.error("error in database: len(results != 1)")
+    if len(names) != 1:
+        logging.error("error in database: len(names != 1)")
         return None
 
     else:
-        return results[0]["name"]
+        return names[0]["name"]
 
 
 def write_makefile(board, modules, application_name, path):
@@ -188,7 +166,7 @@ def write_makefile(board, modules, application_name, path):
         makefile.write("\n\n")
         
         for module in modules:
-            module_name = get_module_name(module)
+            module_name = fetch_module_name(module)
 
             if module_name is None:
                 build_result["cmd_output"] += "error while reading modules from database"

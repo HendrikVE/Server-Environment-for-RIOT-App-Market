@@ -12,9 +12,7 @@ import re
 import os
 import config.db_config as config
 import utility.build_utility as bu
-
-db = None
-db_cursor = None
+from MyDatabase import MyDatabase
 
 build_result = {
     "cmd_output": "",
@@ -31,6 +29,8 @@ CURDIR = os.path.dirname(__file__)
 LOGFILE = os.path.join(CURDIR, "log/build_example_log.txt")
 LOGFILE = os.environ.get('BACKEND_LOGFILE', LOGFILE)
 
+db = MyDatabase()
+
 
 def main(argv):
 
@@ -42,8 +42,6 @@ def main(argv):
     except Exception as e:
         build_result["cmd_output"] += str(e)
         return
-
-    init_db()
 
     board = args.board
     application_id = args.application
@@ -102,8 +100,6 @@ def main(argv):
 
     # using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
     # build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
-
-    close_db()
 
     # delete temporary directories after finished build
     try:
@@ -170,34 +166,17 @@ def replace_application_name(path, application_name, board):
                     makefile.write(line)
 
 
-
-def init_db():
-    
-    global db
-    db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.db_config["passwd"], config.db_config["db"])
-
-    # cursor object to execute queries
-    global db_cursor
-    db_cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
-
-
-def close_db():
-    
-    db_cursor.close()
-    db.close()
-
-
 def get_application_name(id):
     
-    db_cursor.execute("SELECT name FROM applications WHERE id=%s", (id,))
-    results = db_cursor.fetchall()
+    db.query("SELECT name FROM applications WHERE id=%s", (id,))
+    applications = db.fetchall()
 
-    if len(results) != 1:
-        logging.error("error in database: len(results != 1)")
+    if len(applications) != 1:
+        logging.error("error in database: len(applications != 1)")
         return None
 
     else:
-        return results[0]["name"]
+        return applications[0]["name"]
 
 
 if __name__ == "__main__":
