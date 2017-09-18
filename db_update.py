@@ -1,32 +1,24 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import config.db_config as config
-import MySQLdb
 import os
 
-db_cursor = None
-db = None
+import config.db_config as config
+from MyDatabase import MyDatabase
+
+db = MyDatabase()
+
 
 def main():
-    
-    global db_cursor, db
-    
-    db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.db_config["passwd"], config.db_config["db"])
-
-    # cursor object to execute queries
-    db_cursor = db.cursor()
 
     update_modules()
     update_boards()
     update_applications()
 
-    db_cursor.close()
-    db.close()
-    
+
 def update_modules():
     
-    db_cursor.execute("TRUNCATE modules")
+    db.query("TRUNCATE modules")
     
     for i in range(len(config.module_directories)):
 
@@ -45,13 +37,14 @@ def update_modules():
                 module_name = get_name(path + item + "/", item)
                 
                 sql = "INSERT INTO modules (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
-                db_cursor.execute(sql, (module_name, path + item + "/", description, module_directory))
+                db.query(sql, (module_name, path + item + "/", description, module_directory))
 
     db.commit()
-    
+
+
 def update_boards():
-    
-    db_cursor.execute("TRUNCATE boards")
+
+    db.query("TRUNCATE boards")
     
     path = config.path_root + "boards/"
 
@@ -59,13 +52,14 @@ def update_boards():
         if not os.path.isfile(os.path.join(path, item)) and not item.endswith("-common"):
             
             sql = "INSERT INTO boards (display_name, internal_name, flash_program) VALUES (%s, %s, %s);"
-            db_cursor.execute(sql, (item, item, "openocd"))
+            db.query(sql, (item, item, "openocd"))
             
     db.commit()
-    
+
+
 def update_applications():
-    
-    db_cursor.execute("TRUNCATE applications")
+
+    db.query("TRUNCATE applications")
     
     for i in range(len(config.application_directories)):
 
@@ -84,9 +78,10 @@ def update_applications():
                 application_name = get_name(path + item + "/", item)
                 
                 sql = "INSERT INTO applications (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
-                db_cursor.execute(sql, (application_name, path + item + "/", description, application_directory))
+                db.query(sql, (application_name, path + item + "/", description, application_directory))
 
     db.commit()
+
 
 def get_description(path, item):
     
@@ -136,6 +131,7 @@ def get_description(path, item):
         
     return description
 
+
 def get_name(path, application_directory):
     
     name = ""
@@ -165,5 +161,7 @@ def get_name(path, application_directory):
     # remove \n and stuff like that
     return name.strip()
 
+
 if __name__ == "__main__":
+
     main()

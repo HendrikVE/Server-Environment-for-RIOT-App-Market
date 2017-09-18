@@ -25,6 +25,9 @@ class MyDatabase(object):
     def fetchall(self):
         return self._db_cursor.fetchall()
 
+    def commit(self):
+        return self._db_connection.commit()
+
     def __del__(self):
         self._db_cursor.close()
         self._db_connection.close()
