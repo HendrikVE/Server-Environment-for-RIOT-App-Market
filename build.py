@@ -7,7 +7,7 @@ import json
 import logging
 import sys
 from shutil import copyfile, rmtree
-
+import os
 import config.db_config as config
 import utility.build_utility as bu
 
@@ -23,6 +23,11 @@ build_result = {
     "output_archive": None,
     "output_archive_extension": None
 }
+
+CURDIR = os.path.dirname(__file__)
+
+LOGFILE = os.path.join(CURDIR, "log/build_example_log.txt")
+LOGFILE = os.environ.get('BACKEND_LOGFILE', LOGFILE)
 
 
 def main(argv):

@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+
 import MySQLdb
 import argparse
 import json
 import logging
 import sys
-from shutil import copytree, rmtree
-
+from shutil import copytree, rmtree, copyfile
+import re
+import os
 import config.db_config as config
 import utility.build_utility as bu
 
@@ -23,6 +25,11 @@ build_result = {
     "output_archive": None,
     "output_archive_extension": None
 }
+
+CURDIR = os.path.dirname(__file__)
+
+LOGFILE = os.path.join(CURDIR, "log/build_example_log.txt")
+LOGFILE = os.environ.get('BACKEND_LOGFILE', LOGFILE)
 
 
 def main(argv):
@@ -127,7 +134,7 @@ def init_argparse():
 
 def replace_application_name(path, application_name, board):
     
-    file_content = []
+    """file_content = []
     with open(path, "r") as makefile:
 
         file_content = list(makefile.readlines())
@@ -142,7 +149,26 @@ def replace_application_name(path, application_name, board):
                 makefile.write("BOARD = {!s}\n".format(board))
                 
             else:
-                makefile.write(line)
+                makefile.write(line)"""
+
+    BOARD_LINE = re.compile(r'^BOARD \??=')
+
+    # Save the old one to check later in case there is an error
+    copyfile(path, path + '.old')
+
+    with open(path + '.old', "r") as old_makefile:
+        with open(path, "w") as makefile:
+
+            for line in old_makefile.readlines():
+                if line.startswith('APPLICATION ='):
+                    makefile.write("APPLICATION = {!s}\n".format(application_name))
+
+                elif BOARD_LINE.match(line):
+                    makefile.write("BOARD = {!s}\n".format(board))
+
+                else:
+                    makefile.write(line)
+
 
 
 def init_db():
@@ -176,7 +202,8 @@ def get_application_name(id):
 
 if __name__ == "__main__":
     
-    logging.basicConfig(filename = "log/build_example_log.txt", format="%(asctime)s [%(levelname)s]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
+    logging.basicConfig(filename=LOGFILE, format="%(asctime)s [%(levelname)s]: %(message)s",
+                        datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
 
     try:
         main(sys.argv[1:])
