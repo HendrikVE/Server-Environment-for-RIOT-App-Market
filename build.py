@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-import config.db_config as config
-import utility.build_utility as bu
-
 import MySQLdb
-import sys, time
-from shutil import copyfile, rmtree
+import argparse
 import json
 import logging
-import argparse
-import uuid
+import sys
+from shutil import copyfile, rmtree
+
+import config.db_config as config
+import utility.build_utility as bu
 
 db = None
 db_cursor = None
@@ -41,13 +40,14 @@ def main(argv):
 
     board = args.board
     modules = args.modules
+    # main_file_content = args.main_file_content
 
     build_result["board"] = board
 
     parent_path = "RIOT/generated_by_riotam/"
 
     # unique application directory name
-    ticket_id = str(time.time()) + str(uuid.uuid1())
+    ticket_id = bu.get_ticket_id()
 
     application_name = "application{!s}".format(ticket_id)
     application_path = application_name + "/"
@@ -61,8 +61,12 @@ def main(argv):
 
     write_makefile(board, modules, application_name, full_path)
 
-    # just for testing!
+    """with open(full_path + "main.c", "w") as main_file:
+        main_file.write(main_file_content)
+
+        logging.debug(main_file_content)"""
     copyfile("main.c", full_path + "main.c")
+
 
     build_result["cmd_output"] += bu.execute_makefile(full_path)
 
@@ -125,6 +129,11 @@ def init_argparse():
                         dest="board", action="store",
                         required=True,
                         help="the board for which the image should be made")
+
+    parser.add_argument("--mainfile",
+                        dest="main_file_content", action="store",
+                        required=False,
+                        help="main.c file for compiling custom RIOT OS")
 
     return parser
 

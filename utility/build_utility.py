@@ -6,9 +6,12 @@ import glob
 import logging
 import subprocess
 import tarfile
+import uuid
 from shutil import copytree, rmtree, copyfile
 import os
 import errno
+
+import time
 
 
 def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations, board):
@@ -61,6 +64,10 @@ def zip_repo(src_path, dest_path):
 def file_as_base64(path):
     with open(path, "rb") as file:
         return base64.b64encode(file.read())
+
+
+def get_ticket_id():
+    return str(time.time()) + str(uuid.uuid1())
 
 
 def get_temporary_directory(ticket_id):

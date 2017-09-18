@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-import config.db_config as config
-import utility.build_utility as bu
-
 import MySQLdb
-import sys, time
-from shutil import copytree, rmtree
+import argparse
 import json
 import logging
-import argparse
-import uuid
+import sys
+from shutil import copytree, rmtree
+
+import config.db_config as config
+import utility.build_utility as bu
 
 db = None
 db_cursor = None
@@ -47,7 +46,7 @@ def main(argv):
     parent_path = "RIOT/generated_by_riotam/"
 
     # unique application directory name
-    ticket_id = str(time.time()) + str(uuid.uuid1())
+    ticket_id = bu.get_ticket_id()
 
     application_name = "application{!s}".format(ticket_id)
     application_path = application_name + "/"
