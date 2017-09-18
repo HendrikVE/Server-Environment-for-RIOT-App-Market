@@ -2,16 +2,15 @@
 # -*- coding: UTF-8 -*-
 
 import base64
+import errno
 import glob
 import logging
+import os
 import subprocess
 import tarfile
+import time
 import uuid
 from shutil import copytree, rmtree, copyfile
-import os
-import errno
-
-import time
 
 
 def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations, board):
@@ -86,7 +85,6 @@ def create_directories(path):
 
 
 def execute_makefile(path):
-    # make does preserve the path when changing via "--directory=dir"
 
     proc = subprocess.Popen(["make", "--directory={!s}".format(path)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return proc.communicate()[0].replace("\n", "<br>")

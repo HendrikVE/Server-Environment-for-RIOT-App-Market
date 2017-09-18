@@ -3,9 +3,10 @@
 
 from __future__ import print_function
 
-from shutil import copytree, rmtree
+from shutil import copytree, rmtree, copyfile
 import os
 import config.strip_config as config
+
 
 def main():
     
@@ -16,25 +17,27 @@ def main():
         copytree("RIOT", "RIOT_stripped", ignore=config.ignore_patterns)
         
         path = "RIOT_stripped/Makefile.include"
-        file_content = []
-        with open(path, "r") as makefile:
-            
-            lines = makefile.readlines()
-            
-            for line in lines:
-                file_content.append(line)
-            
-        with open(path, "w") as makefile:
-            for line in file_content:
-                
-                if "flash: all" in line:
-                    makefile.write(line.replace(" all", ""))
-                else:
+        # Save the old one to check later in case there is an error
+        copyfile(path, path + '.old')
+
+        with open(path + '.old', "r") as old_makefile:
+            with open(path, "w") as makefile:
+                for line in old_makefile.readlines():
+
+                    if line.startswith("flash: all") or line.startswith("preflash: all"):
+                        print('Changing lines:')
+                        print('    %s' % line)
+                        line = line.replace(" all", "")
+                        print(' -> %s' % line)
+
                     makefile.write(line)
                     
         
     except Exception as e:
         print (e)
-        
+        exit(1)
+
+
 if __name__ == "__main__":
+
     main()

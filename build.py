@@ -53,7 +53,7 @@ def main(argv):
     # unique application directory name
     ticket_id = bu.get_ticket_id()
 
-    application_name = "application{!s}".format(ticket_id)
+    application_name = "application%s" % ticket_id
     application_path = application_name + "/"
     full_path = parent_path + application_path
 
@@ -161,7 +161,7 @@ def write_makefile(board, modules, application_name, path):
         makefile.write("\n\n")
 
         # TODO: check, if board is in database!!!
-        makefile.write("BOARD ?= {!s}".format(board))
+        makefile.write("BOARD ?= %s" % board)
         makefile.write("\n\n")
 
         makefile.write("RIOTBASE ?= $(CURDIR)/../..")
@@ -175,7 +175,7 @@ def write_makefile(board, modules, application_name, path):
                 break
 
             else :
-                makefile.write("USEMODULE += {!s}\n".format(module_name))
+                makefile.write("USEMODULE += %s\n" % module_name)
 
         makefile.write("\n")
         makefile.write("include $(RIOTBASE)/Makefile.include")

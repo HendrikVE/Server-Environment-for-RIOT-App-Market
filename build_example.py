@@ -53,7 +53,7 @@ def main(argv):
     # unique application directory name
     ticket_id = bu.get_ticket_id()
 
-    application_name = "application{!s}".format(ticket_id)
+    application_name = "application%s" % ticket_id
     application_path = application_name + "/"
     full_path = parent_path + application_path
 
@@ -61,7 +61,7 @@ def main(argv):
 
     build_result["application_name"] = application_name
 
-    application_display_name = get_application_name(application_id)
+    application_display_name = fetch_application_name(application_id)
     copytree("RIOT/examples/" + application_display_name + "/", full_path)
 
     replace_application_name(full_path + "Makefile", application_name, board)
@@ -80,10 +80,10 @@ def main(argv):
         archieve_extension = "tar"
         build_result["output_archive_extension"] = archieve_extension
 
-        # [(src_path, dest_path)]
         binary_dest_path = binary_path.replace("RIOT/", "RIOT_stripped/")
         makefile_dest_path = full_path.replace("RIOT/", "RIOT_stripped/")
 
+        # [(src_path, dest_path)]
         single_copy_operations = [
             (binary_path, binary_dest_path),
             (full_path + "Makefile", makefile_dest_path + "Makefile")
@@ -129,23 +129,6 @@ def init_argparse():
 
 
 def replace_application_name(path, application_name, board):
-    
-    """file_content = []
-    with open(path, "r") as makefile:
-
-        file_content = list(makefile.readlines())
-
-    with open(path, "w") as makefile:
-        for line in file_content:
-
-            if line.startswith("APPLICATION = "):
-                makefile.write("APPLICATION = {!s}\n".format(application_name))
-                
-            elif line.startswith("BOARD ?="):
-                makefile.write("BOARD = {!s}\n".format(board))
-                
-            else:
-                makefile.write(line)"""
 
     BOARD_LINE = re.compile(r'^BOARD \??=')
 
@@ -157,16 +140,16 @@ def replace_application_name(path, application_name, board):
 
             for line in old_makefile.readlines():
                 if line.startswith('APPLICATION ='):
-                    makefile.write("APPLICATION = {!s}\n".format(application_name))
+                    makefile.write("APPLICATION = %s\n" % application_name)
 
                 elif BOARD_LINE.match(line):
-                    makefile.write("BOARD = {!s}\n".format(board))
+                    makefile.write("BOARD = %s\n" % board)
 
                 else:
                     makefile.write(line)
 
 
-def get_application_name(id):
+def fetch_application_name(id):
     
     db.query("SELECT name FROM applications WHERE id=%s", (id,))
     applications = db.fetchall()
