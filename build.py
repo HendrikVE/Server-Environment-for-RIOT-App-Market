@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+from __future__ import print_function
+
 import argparse
 import json
 import logging
@@ -190,4 +192,4 @@ if __name__ == "__main__":
         logging.error(str(e), exc_info=True)
         build_result["cmd_output"] += str(e)
 
-    print json.dumps(build_result)
+    print (json.dumps(build_result))

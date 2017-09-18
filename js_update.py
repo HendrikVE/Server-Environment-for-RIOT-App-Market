@@ -3,6 +3,8 @@
 
 # script to update main.js in riotam-website/
 
+from __future__ import print_function
+
 import config.db_config as config
 import MySQLdb
 import os
@@ -41,7 +43,7 @@ def main():
 
 
     except IOError as e:
-        print e
+        print (e)
 
 
 def get_devices_replacement():

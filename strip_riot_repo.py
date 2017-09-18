@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
+from __future__ import print_function
+
 from shutil import copytree, rmtree
 import os
 import config.strip_config as config
@@ -32,7 +34,7 @@ def main():
                     
         
     except Exception as e:
-        print e
+        print (e)
         
 if __name__ == "__main__":
     main()

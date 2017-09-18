@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
+from __future__ import print_function
 
-import MySQLdb
 import argparse
 import json
 import logging
+import os
+import re
 import sys
 from shutil import copytree, rmtree, copyfile
-import re
-import os
-import config.db_config as config
+
 import utility.build_utility as bu
 from MyDatabase import MyDatabase
 
@@ -191,4 +191,4 @@ if __name__ == "__main__":
         logging.error(str(e), exc_info=True)
         build_result["cmd_output"] += str(e)
 
-    print json.dumps(build_result)
+    print (json.dumps(build_result))
