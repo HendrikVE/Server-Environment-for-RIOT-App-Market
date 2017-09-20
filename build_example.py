@@ -61,8 +61,8 @@ def main(argv):
 
     build_result["application_name"] = application_name
 
-    application_display_name = fetch_application_name(application_id)
-    copytree("RIOT/examples/" + application_display_name + "/", full_path)
+    application_path = fetch_application_path(application_id)
+    copytree(application_path, full_path)
 
     replace_application_name(full_path + "Makefile", application_name, board)
 
@@ -149,9 +149,9 @@ def replace_application_name(path, application_name, board):
                     makefile.write(line)
 
 
-def fetch_application_name(id):
+def fetch_application_path(id):
     
-    db.query("SELECT name FROM applications WHERE id=%s", (id,))
+    db.query("SELECT path FROM applications WHERE id=%s", (id,))
     applications = db.fetchall()
 
     if len(applications) != 1:
@@ -159,7 +159,7 @@ def fetch_application_name(id):
         return None
 
     else:
-        return applications[0]["name"]
+        return applications[0]["path"]
 
 
 if __name__ == "__main__":
