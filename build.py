@@ -44,7 +44,7 @@ def main(argv):
 
     board = args.board
     modules = args.modules
-    # main_file_content = args.main_file_content
+    main_file_content = args.main_file_content
 
     build_result["board"] = board
 
@@ -65,11 +65,8 @@ def main(argv):
 
     write_makefile(board, modules, application_name, full_path)
 
-    """with open(full_path + "main.c", "w") as main_file:
+    with open(full_path + "main.c", "w") as main_file:
         main_file.write(main_file_content)
-
-        logging.debug(main_file_content)"""
-    copyfile("main.c", full_path + "main.c")
 
     build_result["cmd_output"] += bu.execute_makefile(full_path, board)
 
