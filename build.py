@@ -26,7 +26,7 @@ build_result = {
 CURDIR = os.path.dirname(__file__)
 
 LOGFILE = os.path.join(CURDIR, "log/build_example_log.txt")
-LOGFILE = os.environ.get('BACKEND_LOGFILE', LOGFILE)
+LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
 
 db = MyDatabase()
 
@@ -71,7 +71,7 @@ def main(argv):
         logging.debug(main_file_content)"""
     copyfile("main.c", full_path + "main.c")
 
-    build_result["cmd_output"] += bu.execute_makefile(full_path)
+    build_result["cmd_output"] += bu.execute_makefile(full_path, board)
 
     try:
         """ IMAGE FILE """
@@ -117,7 +117,7 @@ def main(argv):
 
 def init_argparse():
 
-    parser = argparse.ArgumentParser(description='Build RIOT OS')
+    parser = argparse.ArgumentParser(description="Build RIOT OS")
 
     parser.add_argument("--modules",
                         dest="modules", action="store",

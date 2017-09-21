@@ -27,7 +27,7 @@ build_result = {
 CURDIR = os.path.dirname(__file__)
 
 LOGFILE = os.path.join(CURDIR, "log/build_example_log.txt")
-LOGFILE = os.environ.get('BACKEND_LOGFILE', LOGFILE)
+LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
 
 db = MyDatabase()
 
@@ -64,9 +64,9 @@ def main(argv):
     application_path = fetch_application_path(application_id)
     copytree(application_path, full_path)
 
-    replace_application_name(full_path + "Makefile", application_name, board)
+    replace_application_name(full_path + "Makefile", application_name)
 
-    build_result["cmd_output"] += bu.execute_makefile(full_path)
+    build_result["cmd_output"] += bu.execute_makefile(full_path, board)
 
     try:
         """ IMAGE FILE """
@@ -112,7 +112,7 @@ def main(argv):
 
 def init_argparse():
 
-    parser = argparse.ArgumentParser(description='Build RIOT OS')
+    parser = argparse.ArgumentParser(description="Build RIOT OS")
 
     parser.add_argument("--application",
                         dest="application", action="store",
@@ -128,25 +128,19 @@ def init_argparse():
     return parser
 
 
-def replace_application_name(path, application_name, board):
-
-    BOARD_LINE = re.compile(r'^BOARD \??=')
+def replace_application_name(path, application_name):
 
     # Save the old one to check later in case there is an error
-    copyfile(path, path + '.old')
+    copyfile(path, path + ".old")
 
-    with open(path + '.old', "r") as old_makefile:
+    with open(path + ".old", "r") as old_makefile:
         with open(path, "w") as makefile:
 
             for line in old_makefile.readlines():
-                if line.startswith('APPLICATION ='):
-                    makefile.write("APPLICATION = %s\n" % application_name)
+                if line.startswith("APPLICATION ="):
+                    line = "APPLICATION = %s\n" % application_name
 
-                elif BOARD_LINE.match(line):
-                    makefile.write("BOARD = %s\n" % board)
-
-                else:
-                    makefile.write(line)
+                makefile.write(line)
 
 
 def fetch_application_path(id):

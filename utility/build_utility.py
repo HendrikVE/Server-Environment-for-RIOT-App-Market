@@ -84,7 +84,10 @@ def create_directories(path):
             raise
 
 
-def execute_makefile(path):
+def execute_makefile(path, board):
 
-    proc = subprocess.Popen(["make", "--directory={!s}".format(path)], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    return proc.communicate()[0].replace("\n", "<br>")
+    cmd = ["make", "--directory=%s" % path,
+           "BOARD=%s" % board]
+
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return proc.communicate()[0]
