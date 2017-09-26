@@ -9,6 +9,7 @@ import config.db_config as config
 import MySQLdb
 import os
 
+
 def main():
 
     os.chdir("..")
@@ -23,14 +24,14 @@ def main():
             content = javascript_file.read()
 
             tag_begin = "/* begin of replacement */"
-            tag_end   = "/* end of replacement */"
+            tag_end = "/* end of replacement */"
 
             # setting the index to replace (keep begin and end strings for later updates!)
             index_begin = content.index(tag_begin) + len(tag_begin) + 1
-            index_end   = content.index(tag_end)
+            index_end = content.index(tag_end)
 
             content_string_begin = content[:index_begin]
-            content_string_end   = content[index_end:]
+            content_string_end = content[index_end:]
 
         # override old file with new content
         with open("riotam-website/main.js", "w") as javascript_file:
@@ -40,7 +41,6 @@ def main():
             javascript_file.write(get_devices_replacement())
 
             javascript_file.write(content_string_end)
-
 
     except IOError as e:
         print (e)
@@ -67,6 +67,7 @@ def get_devices_replacement():
     db.close()
     
     return "".join(str_list)
+
 
 if __name__ == "__main__":
     main()

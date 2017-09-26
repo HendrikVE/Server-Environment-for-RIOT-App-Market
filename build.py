@@ -137,7 +137,7 @@ def init_argparse():
 
 
 def fetch_module_name(id):
-    
+    """fetch module name from database"""
     db.query("SELECT name FROM modules WHERE id=%s", (id,))
     names = db.fetchall()
 

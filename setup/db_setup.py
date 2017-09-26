@@ -3,6 +3,8 @@
 
 # this script will read sql statements out of files and execute them to setup the database
 
+from __future__ import print_function
+
 import db_config as config
 import MySQLdb
 
@@ -18,7 +20,7 @@ sql_file_list = [
 ]
 
 for sql_file_path in sql_file_list:
-	
+
     try:
         with open(sql_file_path, "r") as sql_file:
 
@@ -30,7 +32,7 @@ for sql_file_path in sql_file_list:
             db.commit()
 
     except Exception as e:
-        print e
+        print (e)
 
 db_cursor.close()
 db.close()

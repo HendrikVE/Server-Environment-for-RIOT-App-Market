@@ -47,6 +47,7 @@ def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations,
 
 
 def zip_repo(src_path, dest_path):
+    """create tar archive of given path and write tar-file to destination"""
     try:
         tar = tarfile.open(dest_path, "w:gz")
         for file_name in glob.glob(os.path.join(src_path, "*")):
@@ -61,19 +62,23 @@ def zip_repo(src_path, dest_path):
 
 
 def file_as_base64(path):
+    """get file content encoded in base64"""
     with open(path, "rb") as file:
         return base64.b64encode(file.read())
 
 
 def get_ticket_id():
+    """return ad generated unique id"""
     return str(time.time()) + str(uuid.uuid1())
 
 
 def get_temporary_directory(ticket_id):
+    """return a temporary directory depending on an unique id"""
     return "tmp/{!s}/".format(ticket_id)
 
 
 def create_directories(path):
+    """creates all directories on path"""
     try:
         os.makedirs(path)
 
@@ -85,7 +90,7 @@ def create_directories(path):
 
 
 def execute_makefile(path, board):
-
+    """run make on given makefile and override variables"""
     cmd = ["make", "--directory=%s" % path,
            "BOARD=%s" % board]
 
