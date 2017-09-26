@@ -37,7 +37,7 @@ def update_modules():
                 module_name = get_name(os.path.join(path, item), item)
                 
                 sql = "INSERT INTO modules (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
-                db.query(sql, (module_name, path + item + "/", description, module_directory))
+                db.query(sql, (module_name, os.path.join(path, item), description, module_directory))
 
     db.commit()
 

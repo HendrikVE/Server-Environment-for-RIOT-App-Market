@@ -20,7 +20,7 @@ def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations,
 
         try:
             # remove all unnecessary boards
-            path_boards = dest_path + "boards/"
+            path_boards = os.path.join(dest_path, "boards")
             for item in os.listdir(path_boards):
                 if not os.path.isfile(os.path.join(path_boards, item)):
                     if (item != "include") and (not "common" in item) and (item != board):
