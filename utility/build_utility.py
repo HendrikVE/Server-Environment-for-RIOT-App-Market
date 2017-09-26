@@ -24,7 +24,7 @@ def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations,
             for item in os.listdir(path_boards):
                 if not os.path.isfile(os.path.join(path_boards, item)):
                     if (item != "include") and (not "common" in item) and (item != board):
-                        rmtree(path_boards + item)
+                        rmtree(os.path.join(path_boards, item))
 
         except Exception as e:
             logging.error(str(e), exc_info=True)
@@ -74,7 +74,7 @@ def get_ticket_id():
 
 def get_temporary_directory(ticket_id):
     """return a temporary directory depending on an unique id"""
-    return "tmp/{!s}/".format(ticket_id)
+    return os.path.join("tmp", ticket_id)
 
 
 def create_directories(path):

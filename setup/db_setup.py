@@ -3,7 +3,7 @@
 
 # this script will read sql statements out of files and execute them to setup the database
 
-from __future__ import print_function
+from __future__ import (absolute_import, print_function)
 
 import db_config as config
 import MySQLdb

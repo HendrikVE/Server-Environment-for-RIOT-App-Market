@@ -31,8 +31,7 @@ def main():
                         print(' -> %s' % line)
 
                     makefile.write(line)
-                    
-        
+
     except Exception as e:
         print (e)
         exit(1)

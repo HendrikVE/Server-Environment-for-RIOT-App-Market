@@ -70,4 +70,5 @@ def get_devices_replacement():
 
 
 if __name__ == "__main__":
+
     main()
