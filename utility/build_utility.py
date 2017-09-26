@@ -15,7 +15,7 @@ from shutil import copytree, rmtree, copyfile
 
 def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations, board):
     try:
-        dest_path = temporary_directory + "RIOT_stripped/"
+        dest_path = os.path.join(temporary_directory, "RIOT_stripped")
         copytree(src_path, dest_path)
 
         try:
@@ -31,7 +31,7 @@ def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations,
 
         for operation in single_copy_operations:
             # remove file from path, because it shouldnt be created as directory
-            copy_dest_path = temporary_directory + operation[1]
+            copy_dest_path = os.path.join(temporary_directory, operation[1])
             index = copy_dest_path.rindex("/")
             path_to_create = copy_dest_path[:index]
             create_directories(path_to_create)

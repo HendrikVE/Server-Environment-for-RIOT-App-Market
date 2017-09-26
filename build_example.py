@@ -55,7 +55,7 @@ def main(argv):
 
     application_name = "application%s" % ticket_id
     application_path = application_name + "/"
-    full_path = parent_path + application_path
+    full_path = os.path.join(parent_path, application_path)
 
     temporary_directory = bu.get_temporary_directory(ticket_id)
 
@@ -64,7 +64,7 @@ def main(argv):
     application_path = fetch_application_path(application_id)
     copytree(application_path, full_path)
 
-    replace_application_name(full_path + "Makefile", application_name)
+    replace_application_name(os.path.join(full_path, "Makefile"), application_name)
 
     build_result["cmd_output"] += bu.execute_makefile(full_path, board)
 
@@ -73,7 +73,7 @@ def main(argv):
         file_extension = "elf"  # TODO: or hex
         build_result["output_file_extension"] = file_extension
 
-        binary_path = full_path + "bin/" + board + "/" + application_name + "." + file_extension
+        binary_path = os.path.join(full_path, "bin", board, application_name + "." + file_extension)
         build_result["output_file"] = bu.file_as_base64(binary_path)
 
         """ ARCHIVE FILE """
@@ -86,11 +86,11 @@ def main(argv):
         # [(src_path, dest_path)]
         single_copy_operations = [
             (binary_path, binary_dest_path),
-            (full_path + "Makefile", makefile_dest_path + "Makefile")
+            (os.path.join(full_path, "Makefile"), os.path.join(makefile_dest_path, "Makefile"))
         ]
 
         stripped_repo_path = bu.prepare_stripped_repo("RIOT_stripped/", temporary_directory, single_copy_operations, board)
-        archive_path = bu.zip_repo(stripped_repo_path, temporary_directory + "RIOT_stripped.tar")
+        archive_path = bu.zip_repo(stripped_repo_path, os.path.join(temporary_directory, "RIOT_stripped.tar"))
 
         build_result["output_archive"] = bu.file_as_base64(archive_path)
 

@@ -8,7 +8,7 @@ import json
 import logging
 import os
 import sys
-from shutil import copyfile, rmtree
+from shutil import rmtree
 
 import utility.build_utility as bu
 from MyDatabase import MyDatabase
@@ -54,8 +54,8 @@ def main(argv):
     ticket_id = bu.get_ticket_id()
 
     application_name = "application%s" % ticket_id
-    application_path = application_name + "/"
-    full_path = parent_path + application_path
+    application_path = application_name
+    full_path = os.path.join(parent_path, application_path)
 
     temporary_directory = bu.get_temporary_directory(ticket_id)
 
@@ -65,7 +65,7 @@ def main(argv):
 
     write_makefile(board, modules, application_name, full_path)
 
-    with open(full_path + "main.c", "w") as main_file:
+    with open(os.path.join(full_path, "main.c"), "w") as main_file:
         main_file.write(main_file_content)
 
     build_result["cmd_output"] += bu.execute_makefile(full_path, board)
@@ -75,7 +75,7 @@ def main(argv):
         file_extension = "elf"  # TODO: or hex
         build_result["output_file_extension"] = file_extension
 
-        binary_path = full_path + "bin/" + board + "/" + application_name + "." + file_extension
+        binary_path = os.path.join(full_path, "bin", board, application_name + "." + file_extension)
         build_result["output_file"] = bu.file_as_base64(binary_path)
 
         """ ARCHIVE FILE """
@@ -88,11 +88,11 @@ def main(argv):
 
         single_copy_operations = [
             (binary_path, binary_dest_path),
-            (full_path + "Makefile", makefile_dest_path + "Makefile")
+            (os.path.join(full_path, "Makefile"), os.path.join(makefile_dest_path, "Makefile"))
         ]
 
         stripped_repo_path = bu.prepare_stripped_repo("RIOT_stripped/", temporary_directory, single_copy_operations, board)
-        archive_path = bu.zip_repo(stripped_repo_path, temporary_directory + "RIOT_stripped.tar")
+        archive_path = bu.zip_repo(stripped_repo_path, os.path.join(temporary_directory, "RIOT_stripped.tar"))
 
         build_result["output_archive"] = bu.file_as_base64(archive_path)
 
@@ -152,7 +152,7 @@ def fetch_module_name(id):
 def write_makefile(board, modules, application_name, path):
 
     filename = "Makefile"
-    with open(path + filename, "w") as makefile:
+    with open(os.path.join(path, filename), "w") as makefile:
 
         makefile.write("APPLICATION = " + application_name)
         makefile.write("\n\n")
