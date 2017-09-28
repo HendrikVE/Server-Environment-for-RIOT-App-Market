@@ -30,7 +30,9 @@ CREATE_DB = CREATE_DB.format(write=WRITE_GRANTS, **config.db_config)
 
 
 def main():
-    """Create database and users."""
+    """Create database and users.
+
+    """
     conn = db.connect()
     cur = conn.cursor()
 
@@ -50,4 +52,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()

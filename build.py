@@ -138,7 +138,20 @@ def init_argparse():
 
 
 def fetch_module_name(id):
-    """fetch module name from database"""
+    """
+    Fetch module name from database
+
+    Parameters
+    ----------
+    id: int
+        id of the module
+
+    Returns
+    -------
+    string
+        name of the module, None if not found
+
+    """
     db.query("SELECT name FROM modules WHERE id=%s", (id,))
     names = db.fetchall()
 
@@ -151,7 +164,21 @@ def fetch_module_name(id):
 
 
 def write_makefile(board, modules, application_name, path):
+    """
+    Write a custom makefile including board and modules
 
+    Parameters
+    ----------
+    board: string
+        board name
+    modules: array_like with int
+        shortDescription
+    application_name: string
+        name ot the application
+    path: string
+        path the makefile is written to
+
+    """
     filename = "Makefile"
     with open(os.path.join(path, filename), "w") as makefile:
 

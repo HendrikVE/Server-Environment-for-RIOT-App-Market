@@ -7,7 +7,6 @@ import argparse
 import json
 import logging
 import os
-import re
 import sys
 from shutil import copytree, rmtree, copyfile
 
@@ -131,6 +130,18 @@ def init_argparse():
 
 
 def replace_application_name(path, application_name):
+    """
+    Replace application name in line which starts with "APPLICATION="
+
+    Parameters
+    ----------
+    path: string
+        path to the file
+
+    application_name: string
+        name of the application
+
+    """
 
     # Save the old one to check later in case there is an error
     copyfile(path, path + ".old")
@@ -139,14 +150,27 @@ def replace_application_name(path, application_name):
         with open(path, "w") as makefile:
 
             for line in old_makefile.readlines():
-                if line.startswith("APPLICATION ="):
+                if line.replace(" ", "").startswith("APPLICATION="):
                     line = "APPLICATION = %s\n" % application_name
 
                 makefile.write(line)
 
 
 def fetch_application_path(id):
-    
+    """
+    Fetch path of application from database
+
+    Parameters
+    ----------
+    id: int
+        id of the application
+
+    Returns
+    -------
+    type
+        path of the application, None if not found
+
+    """
     db.query("SELECT path FROM applications WHERE id=%s", (id,))
     applications = db.fetchall()
 

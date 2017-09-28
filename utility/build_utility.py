@@ -178,5 +178,5 @@ def execute_makefile(path, board):
     cmd = ["make", "--directory=%s" % path,
            "BOARD=%s" % board]
 
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    return proc.communicate()[0]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return process.communicate()[0]
