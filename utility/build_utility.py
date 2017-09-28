@@ -20,18 +20,18 @@ def prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
     Parameters
     ----------
     src_path: string
-        path to riot repository you want to be stripped
+        Path to riot repository you want to be stripped
     dest_path: string
-        path to store the stripped riot repository
+        Path to store the stripped riot repository
     single_copy_operations: array_like
-        array of (src_path, dest_path) tuples to copy files
+        List of (src_path, dest_path) tuples to copy files
     board: string
-        name of the board
+        Name of the board
 
     Returns
     -------
     string
-        path to stripped RIOT repository
+        Path to stripped RIOT repository
 
     """
     try:
@@ -73,9 +73,9 @@ def zip_repo(src_path, dest_path):
     Parameters
     ----------
     src_path: string
-        source path
+        Source path
     dest_path: string
-        destination path
+        Destination path
 
     """
     try:
@@ -96,12 +96,12 @@ def file_as_base64(path):
     Parameters
     ----------
     path: string
-        path to file to be encoded
+        Path to file to be encoded
 
     Returns
     -------
     string
-        base64 representation of the file
+        Base64 representation of the file
 
     """
     with open(path, "rb") as file:
@@ -122,12 +122,12 @@ def get_temporary_directory(ticket_id):
     Parameters
     ----------
     ticket_id: string
-        unique id
+        Unique id
 
     Returns
     -------
     string
-        path to temporary directory
+        Path to temporary directory
 
     """
     return os.path.join("tmp", ticket_id)
@@ -140,12 +140,12 @@ def create_directories(path):
     Parameters
     ----------
     path: string
-        path to create
+        Path to create
 
     Raises
     -------
     OSError
-        something fails, except errno is EEXIST
+        Something fails creating directories, except errno is EEXIST
 
     """
     try:
@@ -160,19 +160,19 @@ def create_directories(path):
 
 def execute_makefile(path, board):
     """
-    run make on given makefile and override variables
+    Run make on given makefile and override variables
 
     Parameters
     ----------
     path: string
-        path to makefile
+        Path to makefile
     board: string
-        board name
+        Board name
 
     Returns
     -------
     string
-        output from executing make
+        Output from executing make
 
     """
     cmd = ["make", "--directory=%s" % path,

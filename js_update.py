@@ -53,7 +53,7 @@ def get_devices_replacement():
     Returns
     -------
     string
-        javascript scode
+        Javascript code
 
     """
     db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.db_config["passwd"], config.db_config["db"])

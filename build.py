@@ -144,12 +144,12 @@ def fetch_module_name(id):
     Parameters
     ----------
     id: int
-        id of the module
+        ID of the module
 
     Returns
     -------
     string
-        name of the module, None if not found
+        Name of the module, None if not found
 
     """
     db.query("SELECT name FROM modules WHERE id=%s", (id,))
@@ -170,13 +170,13 @@ def write_makefile(board, modules, application_name, path):
     Parameters
     ----------
     board: string
-        board name
+        Board name
     modules: array_like with int
-        shortDescription
+        List with IDs of wanted modules
     application_name: string
-        name ot the application
+        Name ot the application
     path: string
-        path the makefile is written to
+        Path the makefile is written to
 
     """
     filename = "Makefile"

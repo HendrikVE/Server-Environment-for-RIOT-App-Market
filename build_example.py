@@ -136,10 +136,10 @@ def replace_application_name(path, application_name):
     Parameters
     ----------
     path: string
-        path to the file
+        Path to the file
 
     application_name: string
-        name of the application
+        Name of the application
 
     """
 
@@ -163,12 +163,12 @@ def fetch_application_path(id):
     Parameters
     ----------
     id: int
-        id of the application
+        ID of the application
 
     Returns
     -------
     type
-        path of the application, None if not found
+        Path of the application, None if not found
 
     """
     db.query("SELECT path FROM applications WHERE id=%s", (id,))

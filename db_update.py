@@ -97,19 +97,19 @@ def update_applications():
 
 def get_description(path, item):
     """
-    collection of rules executing inner function to search for a description
+    Collection of rules executing inner function to search for a description
 
     Parameters
     ----------
     path: string
-        path in which the search is done
+        Path in which the search is done
     item: string
-        name of the item
+        Name of the item
 
     Returns
     -------
     string
-        description of item, None if not found
+        Description of item, None if not found
 
     """
     
@@ -120,12 +120,12 @@ def get_description(path, item):
         Parameters
         ----------
         path: string
-            path to file
+            Path to file
 
         Returns
         -------
         string
-            description of item, None if not found
+            Description of item, None if not found
 
         """
         
@@ -181,14 +181,14 @@ def get_name(path, application_directory):
     Parameters
     ----------
     path: string
-        path containing file called "Makefile"
+        Path containing file called "Makefile"
     application_directory: string
-        replacement if nothing found or IOError is raised internally
+        Replacement if nothing found or IOError is raised internally
 
     Returns
     -------
     string
-        name of the application
+        Name of the application
 
     """
     name = ""
