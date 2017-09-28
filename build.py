@@ -48,7 +48,7 @@ def main(argv):
 
     build_result["board"] = board
 
-    parent_path = "RIOT/generated_by_riotam/"
+    parent_path = "RIOT/generated_by_riotam"
 
     # unique application directory name
     ticket_id = bu.get_ticket_id()
@@ -82,8 +82,8 @@ def main(argv):
         build_result["output_archive_extension"] = archive_extension
 
         # [(src_path, dest_path)]
-        binary_dest_path = binary_path.replace("RIOT/", "RIOT_stripped/")
-        makefile_dest_path = full_path.replace("RIOT/", "RIOT_stripped/")
+        binary_dest_path = binary_path.replace("RIOT", "RIOT_stripped")
+        makefile_dest_path = full_path.replace("RIOT", "RIOT_stripped")
 
         single_copy_operations = [
             (binary_path, binary_dest_path),
@@ -106,8 +106,9 @@ def main(argv):
 
     # delete temporary directories after finished build
     try:
-        rmtree(full_path)
-        rmtree(temporary_directory)
+        #rmtree(full_path)
+        #rmtree(temporary_directory)
+        pass
 
     except Exception as e:
         logging.error(str(e), exc_info=True)

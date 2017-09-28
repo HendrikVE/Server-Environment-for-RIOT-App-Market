@@ -35,6 +35,7 @@ def prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
 
     """
     try:
+        a = dest_path
         dest_path = os.path.join(dest_path, "RIOT_stripped")
         copytree(src_path, dest_path)
 
@@ -51,7 +52,7 @@ def prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
 
         for operation in single_copy_operations:
             # remove file from path, because it shouldnt be created as directory
-            copy_dest_path = os.path.join(dest_path, operation[1])
+            copy_dest_path = os.path.join(a, operation[1])
             index = copy_dest_path.rindex("/")
             path_to_create = copy_dest_path[:index]
             create_directories(path_to_create)

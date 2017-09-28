@@ -47,14 +47,13 @@ def main(argv):
 
     build_result["board"] = board
 
-    parent_path = "RIOT/generated_by_riotam/"
+    parent_path = "RIOT/generated_by_riotam"
 
     # unique application directory name
     ticket_id = bu.get_ticket_id()
 
     application_name = "application%s" % ticket_id
-    application_path = application_name + "/"
-    full_path = os.path.join(parent_path, application_path)
+    full_path = os.path.join(parent_path, application_name)
 
     temporary_directory = bu.get_temporary_directory(ticket_id)
 
@@ -76,11 +75,11 @@ def main(argv):
         build_result["output_file"] = bu.file_as_base64(binary_path)
 
         """ ARCHIVE FILE """
-        archieve_extension = "tar"
-        build_result["output_archive_extension"] = archieve_extension
+        archive_extension = "tar"
+        build_result["output_archive_extension"] = archive_extension
 
-        binary_dest_path = binary_path.replace("RIOT/", "RIOT_stripped/")
-        makefile_dest_path = full_path.replace("RIOT/", "RIOT_stripped/")
+        binary_dest_path = binary_path.replace("RIOT", "RIOT_stripped")
+        makefile_dest_path = full_path.replace("RIOT", "RIOT_stripped")
 
         # [(src_path, dest_path)]
         single_copy_operations = [
@@ -104,8 +103,9 @@ def main(argv):
 
     # delete temporary directories after finished build
     try:
-        rmtree(full_path)
-        rmtree(temporary_directory)
+        #rmtree(full_path)
+        #rmtree(temporary_directory)
+        pass
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
@@ -167,7 +167,7 @@ def fetch_application_path(id):
 
     Returns
     -------
-    type
+    string
         Path of the application, None if not found
 
     """
