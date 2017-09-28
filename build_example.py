@@ -90,7 +90,9 @@ def main(argv):
         ]
 
         stripped_repo_path = bu.prepare_stripped_repo("RIOT_stripped/", temporary_directory, single_copy_operations, board)
-        archive_path = bu.zip_repo(stripped_repo_path, os.path.join(temporary_directory, "RIOT_stripped.tar"))
+
+        archive_path = os.path.join(temporary_directory, "RIOT_stripped.tar")
+        bu.zip_repo(stripped_repo_path, archive_path)
 
         build_result["output_archive"] = bu.file_as_base64(archive_path)
 

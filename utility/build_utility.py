@@ -13,9 +13,29 @@ import uuid
 from shutil import copytree, rmtree, copyfile
 
 
-def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations, board):
+def prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
+    """
+    Strip a RIOT repositiory to a minimal version, so that flashing still works
+
+    Parameters
+    ----------
+    src_path: string
+        path to riot repository you want to be stripped
+    dest_path: string
+        path to store the stripped riot repository
+    single_copy_operations: array_like
+        array of (src_path, dest_path) tuples to copy files
+    board: string
+        name of the board
+
+    Returns
+    -------
+    string
+        path to stripped RIOT repository
+
+    """
     try:
-        dest_path = os.path.join(temporary_directory, "RIOT_stripped")
+        dest_path = os.path.join(dest_path, "RIOT_stripped")
         copytree(src_path, dest_path)
 
         try:
@@ -31,7 +51,7 @@ def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations,
 
         for operation in single_copy_operations:
             # remove file from path, because it shouldnt be created as directory
-            copy_dest_path = os.path.join(temporary_directory, operation[1])
+            copy_dest_path = os.path.join(dest_path, operation[1])
             index = copy_dest_path.rindex("/")
             path_to_create = copy_dest_path[:index]
             create_directories(path_to_create)
@@ -47,7 +67,17 @@ def prepare_stripped_repo(src_path, temporary_directory, single_copy_operations,
 
 
 def zip_repo(src_path, dest_path):
-    """create tar archive of given path and write tar-file to destination"""
+    """
+    Create tar archive of given path and write tar-file to destination
+
+    Parameters
+    ----------
+    src_path: string
+        source path
+    dest_path: string
+        destination path
+
+    """
     try:
         tar = tarfile.open(dest_path, "w:gz")
         for file_name in glob.glob(os.path.join(src_path, "*")):
@@ -58,27 +88,66 @@ def zip_repo(src_path, dest_path):
     except Exception as e:
         logging.error(str(e), exc_info=True)
 
-    return dest_path
-
 
 def file_as_base64(path):
-    """get file content encoded in base64"""
+    """
+    Get file content encoded in base64
+
+    Parameters
+    ----------
+    path: string
+        path to file to be encoded
+
+    Returns
+    -------
+    string
+        base64 representation of the file
+
+    """
     with open(path, "rb") as file:
         return base64.b64encode(file.read())
 
 
 def get_ticket_id():
-    """return ad generated unique id"""
+    """Return a generated unique id
+
+    """
     return str(time.time()) + str(uuid.uuid1())
 
 
 def get_temporary_directory(ticket_id):
-    """return a temporary directory depending on an unique id"""
+    """
+    Return path to a temporary directory depending on an unique id
+
+    Parameters
+    ----------
+    ticket_id: string
+        unique id
+
+    Returns
+    -------
+    string
+        path to temporary directory
+
+    """
     return os.path.join("tmp", ticket_id)
 
 
 def create_directories(path):
-    """creates all directories on path"""
+    """
+    Creates all directories on path
+
+    Parameters
+    ----------
+    path: string
+        path to create
+
+    Raises
+    -------
+    OSError
+        something fails, except errno is EEXIST
+
+    """
     try:
         os.makedirs(path)
 
@@ -90,7 +159,22 @@ def create_directories(path):
 
 
 def execute_makefile(path, board):
-    """run make on given makefile and override variables"""
+    """
+    run make on given makefile and override variables
+
+    Parameters
+    ----------
+    path: string
+        path to makefile
+    board: string
+        board name
+
+    Returns
+    -------
+    string
+        output from executing make
+
+    """
     cmd = ["make", "--directory=%s" % path,
            "BOARD=%s" % board]
 
