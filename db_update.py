@@ -17,6 +17,10 @@ def main():
 
 
 def update_modules():
+    """
+    Update table "modules". The table is truncated and data is re-imported
+
+    """
     
     db.query("TRUNCATE modules")
     
@@ -43,6 +47,10 @@ def update_modules():
 
 
 def update_boards():
+    """
+    Update table "boards". The table is truncated and data is re-imported
+
+    """
 
     db.query("TRUNCATE boards")
     
@@ -58,6 +66,10 @@ def update_boards():
 
 
 def update_applications():
+    """
+    Update table "applications". The table is truncated and data is re-imported
+
+    """
 
     db.query("TRUNCATE applications")
     
@@ -84,8 +96,38 @@ def update_applications():
 
 
 def get_description(path, item):
+    """
+    collection of rules executing inner function to search for a description
+
+    Parameters
+    ----------
+    path: string
+        path in which the search is done
+    item: string
+        name of the item
+
+    Returns
+    -------
+    string
+        description of item, None if not found
+
+    """
     
     def get_description_helper(path):
+        """
+        Get description from line which contains "@brief"
+
+        Parameters
+        ----------
+        path: string
+            path to file
+
+        Returns
+        -------
+        string
+            description of item, None if not found
+
+        """
         
         description = ""
     
@@ -133,7 +175,22 @@ def get_description(path, item):
 
 
 def get_name(path, application_directory):
-    
+    """
+    Get the name of an application
+
+    Parameters
+    ----------
+    path: string
+        path containing file called "Makefile"
+    application_directory: string
+        replacement if nothing found or IOError is raised internally
+
+    Returns
+    -------
+    string
+        name of the application
+
+    """
     name = ""
     
     try:

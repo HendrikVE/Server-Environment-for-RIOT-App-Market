@@ -47,7 +47,15 @@ def main():
 
 
 def get_devices_replacement():
-    
+    """
+    Get javascript code containing the rules for selecting devices via Google WebUSB-API
+
+    Returns
+    -------
+    string
+        javascript scode
+
+    """
     db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.db_config["passwd"], config.db_config["db"])
 
     # cursor object to execute queries
