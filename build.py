@@ -82,8 +82,8 @@ def main(argv):
         build_result["output_archive_extension"] = archive_extension
 
         # [(src_path, dest_path)]
-        binary_dest_path = binary_path.replace("RIOT", "RIOT_stripped")
-        makefile_dest_path = full_path.replace("RIOT", "RIOT_stripped")
+        binary_dest_path = binary_path.replace("RIOT/", "")
+        makefile_dest_path = full_path.replace("RIOT/", "")
 
         single_copy_operations = [
             (binary_path, binary_dest_path),
@@ -106,9 +106,8 @@ def main(argv):
 
     # delete temporary directories after finished build
     try:
-        #rmtree(full_path)
-        #rmtree(temporary_directory)
-        pass
+        rmtree(full_path)
+        rmtree(temporary_directory)
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
