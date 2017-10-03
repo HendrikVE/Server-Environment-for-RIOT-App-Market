@@ -104,9 +104,8 @@ def main(argv):
 
     # delete temporary directories after finished build
     try:
-        #rmtree(app_build_dir)
-        #rmtree(temp_dir)
-        pass
+        rmtree(app_build_dir)
+        rmtree(temp_dir)
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
