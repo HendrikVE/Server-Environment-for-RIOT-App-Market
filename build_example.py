@@ -47,31 +47,31 @@ def main(argv):
 
     build_result["board"] = board
 
-    parent_path = "RIOT/generated_by_riotam"
+    app_build_parent_dir = "RIOT/generated_by_riotam"
 
     # unique application directory name
     ticket_id = bu.get_ticket_id()
 
-    application_name = "application%s" % ticket_id
-    full_path = os.path.join(parent_path, application_name)
+    app_name = "application%s" % ticket_id
+    app_build_dir = os.path.join(app_build_parent_dir, app_name)
 
-    temporary_directory = bu.get_temporary_directory(ticket_id)
+    temp_dir = bu.get_temporary_directory(ticket_id)
 
-    build_result["application_name"] = application_name
+    build_result["application_name"] = app_name
 
-    application_path = fetch_application_path(application_id)
-    copytree(application_path, full_path)
+    app_path = fetch_application_path(application_id)
+    copytree(app_path, app_build_dir)
 
-    replace_application_name(os.path.join(full_path, "Makefile"), application_name)
+    replace_application_name(os.path.join(app_build_dir, "Makefile"), app_name)
 
-    build_result["cmd_output"] += bu.execute_makefile(full_path, board)
+    build_result["cmd_output"] += bu.execute_makefile(app_build_dir, board)
 
     try:
         """ IMAGE FILE """
         file_extension = "elf"  # TODO: or hex
         build_result["output_file_extension"] = file_extension
 
-        binary_path = os.path.join(full_path, "bin", board, application_name + "." + file_extension)
+        binary_path = os.path.join(app_build_dir, "bin", board, app_name + "." + file_extension)
         build_result["output_file"] = bu.file_as_base64(binary_path)
 
         """ ARCHIVE FILE """
@@ -79,17 +79,17 @@ def main(argv):
         build_result["output_archive_extension"] = archive_extension
 
         binary_dest_path = binary_path.replace("RIOT/", "")
-        makefile_dest_path = full_path.replace("RIOT/", "")
+        makefile_dest_path = app_build_dir.replace("RIOT/", "")
 
         # [(src_path, dest_path)]
         single_copy_operations = [
             (binary_path, binary_dest_path),
-            (os.path.join(full_path, "Makefile"), os.path.join(makefile_dest_path, "Makefile"))
+            (os.path.join(app_build_dir, "Makefile"), os.path.join(makefile_dest_path, "Makefile"))
         ]
 
-        stripped_repo_path = bu.prepare_stripped_repo("RIOT_stripped/", temporary_directory, single_copy_operations, board)
+        stripped_repo_path = bu.prepare_stripped_repo("RIOT_stripped/", temp_dir, single_copy_operations, board)
 
-        archive_path = os.path.join(temporary_directory, "RIOT_stripped.tar")
+        archive_path = os.path.join(temp_dir, "RIOT_stripped.tar")
         bu.zip_repo(stripped_repo_path, archive_path)
 
         build_result["output_archive"] = bu.file_as_base64(archive_path)
@@ -103,9 +103,8 @@ def main(argv):
 
     # delete temporary directories after finished build
     try:
-        #rmtree(full_path)
-        #rmtree(temporary_directory)
-        pass
+        rmtree(app_build_dir)
+        rmtree(temp_dir)
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
