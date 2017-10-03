@@ -64,14 +64,15 @@ def main(argv):
 
     replace_application_name(os.path.join(app_build_dir, "Makefile"), app_name)
 
-    build_result["cmd_output"] += bu.execute_makefile(app_build_dir, board)
+    build_result["cmd_output"] += bu.execute_makefile(app_build_dir, board, app_name)
 
     try:
         """ IMAGE FILE """
         file_extension = "elf"  # TODO: or hex
         build_result["output_file_extension"] = file_extension
 
-        binary_path = os.path.join(app_build_dir, "bin", board, app_name + "." + file_extension)
+        bindir = os.path.join(app_build_dir, "bin", board)
+        binary_path = bu.app_elffile_path(bindir, app_name)
         build_result["output_file"] = bu.file_as_base64(binary_path)
 
         """ ARCHIVE FILE """
@@ -103,8 +104,9 @@ def main(argv):
 
     # delete temporary directories after finished build
     try:
-        rmtree(app_build_dir)
-        rmtree(temp_dir)
+        #rmtree(app_build_dir)
+        #rmtree(temp_dir)
+        pass
 
     except Exception as e:
         logging.error(str(e), exc_info=True)

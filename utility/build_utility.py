@@ -158,16 +158,32 @@ def create_directories(path):
             raise
 
 
-def execute_makefile(path, board):
+def app_elffile_path(path, app_name):
+    return os.path.join(path, "%s.elf" % app_name)
+
+
+def app_hexfile_path(path, app_name):
+    elffile_path = app_elffile_path(path, app_name)
+    return _rreplace(elffile_path, ".elf", ".hex", 1)
+
+
+def _rreplace(string, old, new, occurrences):
+    list = string.rsplit(old, occurrences)
+    return new.join(list)
+
+
+def execute_makefile(app_build_dir, board, app_name):
     """
     Run make on given makefile and override variables
 
     Parameters
     ----------
-    path: string
+    app_build_dir: string
         Path to makefile
     board: string
         Board name
+    app_name: string
+        Application name
 
     Returns
     -------
@@ -175,8 +191,18 @@ def execute_makefile(path, board):
         Output from executing make
 
     """
-    cmd = ["make", "--directory=%s" % path,
-           "BOARD=%s" % board]
+
+    # set ELFFILE the same way as RIOT Makefile.include (path to .hex file is extracted from this information)
+    app_build_dir_abs_path = os.path.abspath(app_build_dir)
+
+    bindirbase = os.path.join(app_build_dir_abs_path, "bin")
+    bindir = os.path.join(bindirbase, board)
+    elffile = app_elffile_path(bindir, app_name)
+
+    cmd = ["make", "--directory=%s" % app_build_dir,
+           "BOARD=%s" % board,
+           "BINDIRBASE=%s" % bindirbase,
+           "ELFFILE=%s" % elffile]
 
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return process.communicate()[0]
