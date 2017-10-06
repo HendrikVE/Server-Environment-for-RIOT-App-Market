@@ -19,7 +19,7 @@ def main():
         content_string_begin = ""
         content_string_end   = ""
 
-        with open(os.path.join(PATH_RIOTAM_WEBSITE, "main.js"), "r") as javascript_file:
+        with open(os.path.join(PATH_RIOTAM_WEBSITE, "js/main.js"), "r") as javascript_file:
 
             content = javascript_file.read()
 
