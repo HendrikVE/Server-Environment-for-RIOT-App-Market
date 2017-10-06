@@ -3,7 +3,11 @@
 
 db_config = {
     "host": "localhost",
-    "user": "backend_script",
-    "passwd": "password",
-    "db": "riot_os"
+    "db": "riot_os",
+
+    "user_backend": "riotam_backend",
+    "passwd_backend": "Bg2An8RnaqzR",
+
+    "user_website": "riotam_website",
+    "passwd_website": "feKorDjv94vR",
 }

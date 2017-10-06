@@ -8,48 +8,116 @@ It should be run as the root account without mysql password.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import argparse
+
 import db_config as config
-import MySQLdb as db
+import MySQLdb
+
+import sys
 
 
-REMOVE_DB = (
-    "DROP DATABASE {db};\n"
-    "DROP USER '{user}'@'{host}';\n"
-)
-REMOVE_DB = REMOVE_DB.format(**config.db_config)
+def main(argv):
 
-WRITE_GRANTS = "SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER"
-CREATE_DB = (
-    "CREATE DATABASE {db};\n"
-    "CREATE USER '{user}'@'{host}' IDENTIFIED BY '{passwd}';\n"
-    "GRANT {write} ON {db}.* TO '{user}'@'{host}';\n"
-    "SHOW GRANTS FOR '{user}'@'{host}';\n"
-)
-CREATE_DB = CREATE_DB.format(write=WRITE_GRANTS, **config.db_config)
+    parser = init_argparse()
 
+    try:
+        args = parser.parse_args(argv)
 
-def main():
-    """Create database and users.
+    except Exception as e:
+        print (str(e))
+        return
 
-    """
-    conn = db.connect()
-    cur = conn.cursor()
+    privileged_user = args.user
+    privileged_password = args.password
+
+    db = MySQLdb.connect(user=privileged_user, passwd=privileged_password)
+    db_cursor = db.cursor()
+
+    host = config.db_config["host"]
+    database = config.db_config["db"]
+
+    user_backend = config.db_config["user_backend"]
+    password_backend = config.db_config["passwd_backend"]
+    granted_backend = "SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER"
+
+    user_website = config.db_config["user_website"]
+    password_website = config.db_config["passwd_website"]
+    granted_website = "SELECT"
 
     print("Cleanup database")
-    for line in REMOVE_DB.splitlines():
-        print(line)
-        cur.execute(line)
+    drop_database(db_cursor, database)
+    drop_user(db_cursor, user_backend, host)
+    drop_user(db_cursor, user_website, host)
+
     print()
 
     print("Create database")
-    for line in CREATE_DB.splitlines():
-        print(line)
-        cur.execute(line)
+    db_cursor.execute("CREATE DATABASE %s;" % database)
+    create_user(db_cursor, host, user_backend, password_backend, database, granted_backend)
+    create_user(db_cursor, host, user_website, password_website, database, granted_website)
 
-    cur.close()
-    conn.close()
+    db_cursor.close()
+    db.close()
+
+
+def init_argparse():
+
+    parser = argparse.ArgumentParser(description="Create database for riotam")
+
+    parser.add_argument("--user",
+                        dest="user", action="store",
+                        required=True,
+                        help="privileged database user")
+
+    parser.add_argument("--password",
+                        dest="password", action="store",
+                        required=True,
+                        help="password for user")
+
+    return parser
+
+
+def create_user(cur, host, user, password, database, granted):
+
+    sql = "CREATE USER '{USER}'@'{HOST}' IDENTIFIED BY '{PASSWORD}';".format(HOST=host, USER=user, PASSWORD=password)
+    try:
+        print("executed: %s" % sql)
+        cur.execute(sql)
+
+    except Exception as e:
+        print (str(e))
+
+    sql = "GRANT {GRANTED} ON {DATABASE}.* TO '{USER}'@'{HOST}';".format(GRANTED=granted, DATABASE=database, USER=user, HOST=host)
+    try:
+        print("executed: %s" % sql)
+        cur.execute(sql)
+
+    except Exception as e:
+        print(str(e))
+
+
+def drop_database(cur, database):
+
+    sql = "DROP DATABASE {DATABASE};".format(DATABASE=database)
+    try:
+        cur.execute(sql)
+        print ("executed: %s" % sql)
+
+    except Exception as e:
+        print (str(e))
+
+
+def drop_user(cur, user, host):
+
+    sql = "DROP USER '{USER}'@'{HOST}';".format(USER=user, HOST=host)
+    try:
+        cur.execute(sql)
+        print("executed: %s" % sql)
+
+    except Exception as e:
+        print (str(e))
 
 
 if __name__ == "__main__":
 
-    main()
+    main(sys.argv[1:])

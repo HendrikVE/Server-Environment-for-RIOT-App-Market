@@ -8,7 +8,10 @@ from __future__ import (absolute_import, print_function)
 import db_config as config
 import MySQLdb
 
-db = MySQLdb.connect(config.db_config["host"], config.db_config["user"], config.db_config["passwd"], config.db_config["db"])
+db = MySQLdb.connect(config.db_config["host"],
+                     config.db_config["user_backend"],
+                     config.db_config["passwd_backend"],
+                     config.db_config["db"])
 
 # cursor object to execute queries
 db_cursor = db.cursor()

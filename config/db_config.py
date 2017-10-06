@@ -3,8 +3,8 @@
 
 db_config = {
     "host": "localhost",
-    "user": "backend_script",
-    "passwd": "password",
+    "user": "riotam_backend",
+    "passwd": "Bg2An8RnaqzR",
     "db": "riot_os"
 }
 
