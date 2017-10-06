@@ -6,8 +6,7 @@
 It should be run as the root account without mysql password.
 """
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import db_config as config
 import MySQLdb as db
