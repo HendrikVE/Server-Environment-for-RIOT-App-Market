@@ -12,5 +12,6 @@
     * SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER
 * change password for 'backend_script' in riotam-backend/db_config.py and riotam-backend/setup/db_config.py by the password you set by creating user 'backend_script'
 * go to riotam-backend/setup and run 'python db_setup.py'
+* update the database with db_update.py
 * update the available devices in main.js run riotam-backend/js_update.py
 * to create or update a stripped version of the RIOT repository run strip_riot_repo.py
