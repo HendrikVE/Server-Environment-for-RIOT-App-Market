@@ -61,7 +61,7 @@ def get_devices_replacement():
     # cursor object to execute queries
     db_cursor = db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 
-    db_cursor.execute("SELECT * FROM devices")
+    db_cursor.execute("SELECT * FROM boards")
     results = db_cursor.fetchall()
 
     str_list = []
