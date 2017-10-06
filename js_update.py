@@ -9,17 +9,17 @@ import config.db_config as config
 import MySQLdb
 import os
 
+PATH_RIOTAM_WEBSITE = "/var/www/riotam-website"
+
 
 def main():
-
-    os.chdir("..")
 
     try:
 
         content_string_begin = ""
         content_string_end   = ""
 
-        with open("riotam-website/main.js", "r") as javascript_file:
+        with open(os.path.join(PATH_RIOTAM_WEBSITE, "main.js"), "r") as javascript_file:
 
             content = javascript_file.read()
 
@@ -34,7 +34,7 @@ def main():
             content_string_end = content[index_end:]
 
         # override old file with new content
-        with open("riotam-website/main.js", "w") as javascript_file:
+        with open(os.path.join(PATH_RIOTAM_WEBSITE, "main.js"), "w") as javascript_file:
 
             javascript_file.write(content_string_begin)
 
