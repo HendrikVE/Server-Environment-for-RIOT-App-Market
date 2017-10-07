@@ -30,7 +30,12 @@ def main(argv):
     privileged_user = args.user
     privileged_password = args.password
 
-    db = MySQLdb.connect(user=privileged_user, passwd=privileged_password)
+    if privileged_user is None or privileged_password is None:
+        db = MySQLdb.connect()
+
+    else:
+        db = MySQLdb.connect(user=privileged_user, passwd=privileged_password)
+
     db_cursor = db.cursor()
 
     host = config.db_config["host"]
@@ -66,12 +71,12 @@ def init_argparse():
 
     parser.add_argument("--user",
                         dest="user", action="store",
-                        required=True,
+                        required=False,
                         help="privileged database user")
 
     parser.add_argument("--password",
                         dest="password", action="store",
-                        required=True,
+                        required=False,
                         help="password for user")
 
     return parser
