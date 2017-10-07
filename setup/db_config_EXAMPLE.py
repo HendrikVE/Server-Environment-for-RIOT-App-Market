@@ -6,8 +6,8 @@ db_config = {
     "db": "riot_os",
 
     "user_backend": "riotam_backend",
-    "passwd_backend": "PASSWORD#1",
+    "passwd_backend": "PASSWORD_BACKEND",
 
     "user_website": "riotam_website",
-    "passwd_website": "PASSWORD#2",
+    "passwd_website": "PASSWORD_WEBSITE",
 }

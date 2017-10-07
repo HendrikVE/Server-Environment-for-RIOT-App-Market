@@ -4,7 +4,7 @@
 db_config = {
     "host": "localhost",
     "user": "riotam_backend",
-    "passwd": "PASSWORD",
+    "passwd": "PASSWORD_BACKEND",
     "db": "riot_os"
 }
 
