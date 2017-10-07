@@ -3,10 +3,11 @@
 
 # this script will read sql statements out of files and execute them to setup the database
 
-from __future__ import (absolute_import, print_function)
+from __future__ import print_function
+
+import MySQLdb
 
 import db_config as config
-import MySQLdb
 
 db = MySQLdb.connect(config.db_config["host"],
                      config.db_config["user_backend"],

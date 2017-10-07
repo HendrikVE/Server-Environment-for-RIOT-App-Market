@@ -6,14 +6,13 @@
 It should be run as the root account without mysql password.
 """
 
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import division, print_function, unicode_literals
 
+import MySQLdb
 import argparse
+import sys
 
 import db_config as config
-import MySQLdb
-
-import sys
 
 
 def main(argv):
@@ -31,7 +30,11 @@ def main(argv):
     privileged_password = args.password
 
     if privileged_user is None or privileged_password is None:
-        db = MySQLdb.connect()
+
+        if privileged_password is None and privileged_user is not None:
+            db = MySQLdb.connect(user=privileged_user)
+        else:
+            db = MySQLdb.connect()
 
     else:
         db = MySQLdb.connect(user=privileged_user, passwd=privileged_password)
