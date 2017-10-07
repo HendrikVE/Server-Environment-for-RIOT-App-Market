@@ -3,42 +3,22 @@
 
 """Create backend database and repository.
 
-It should be run as the root account without mysql password.
 """
 
 from __future__ import division, print_function, unicode_literals
 
 import MySQLdb
-import argparse
-import sys
+from getpass import getpass
 
 import db_config as config
 
 
-def main(argv):
+def main():
 
-    parser = init_argparse()
+    privileged_user = raw_input("Please enter name of privileged database user: ")
+    privileged_password = getpass()
 
-    try:
-        args = parser.parse_args(argv)
-
-    except Exception as e:
-        print (str(e))
-        return
-
-    privileged_user = args.user
-    privileged_password = args.password
-
-    if privileged_user is None or privileged_password is None:
-
-        if privileged_password is None and privileged_user is not None:
-            db = MySQLdb.connect(user=privileged_user)
-        else:
-            db = MySQLdb.connect()
-
-    else:
-        db = MySQLdb.connect(user=privileged_user, passwd=privileged_password)
-
+    db = MySQLdb.connect(user=privileged_user, passwd=privileged_password)
     db_cursor = db.cursor()
 
     host = config.db_config["host"]
@@ -66,23 +46,6 @@ def main(argv):
 
     db_cursor.close()
     db.close()
-
-
-def init_argparse():
-
-    parser = argparse.ArgumentParser(description="Create database for riotam")
-
-    parser.add_argument("--user",
-                        dest="user", action="store",
-                        required=False,
-                        help="privileged database user")
-
-    parser.add_argument("--password",
-                        dest="password", action="store",
-                        required=False,
-                        help="password for user")
-
-    return parser
 
 
 def create_user(cur, host, user, password, database, granted):
@@ -128,4 +91,4 @@ def drop_user(cur, user, host):
 
 if __name__ == "__main__":
 
-    main(sys.argv[1:])
+    main()
