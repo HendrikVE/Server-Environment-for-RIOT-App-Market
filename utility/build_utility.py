@@ -56,7 +56,11 @@ def prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
             path_to_create = copy_dest_path[:index]
             create_directories(path_to_create)
 
-            copyfile(operation[0], copy_dest_path)
+            try:
+                copyfile(operation[0], copy_dest_path)
+
+            except Exception as e:
+                logging.debug(str(e))
 
         return dest_path
 

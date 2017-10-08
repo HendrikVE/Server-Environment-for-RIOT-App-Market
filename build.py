@@ -75,19 +75,24 @@ def main(argv):
         build_result["output_file_extension"] = file_extension
 
         bindir = os.path.join(app_build_dir, "bin", board)
-        binary_path = bu.app_elffile_path(bindir, app_name)
-        build_result["output_file"] = bu.file_as_base64(binary_path)
+        elffile_path = bu.app_elffile_path(bindir, app_name)
+        hexfile_path = bu.app_hexfile_path(bindir, app_name)
+
+        # TODO: remove
+        build_result["output_file"] = bu.file_as_base64(elffile_path)
 
         """ ARCHIVE FILE """
         archive_extension = "tar"
         build_result["output_archive_extension"] = archive_extension
 
         # [(src_path, dest_path)]
-        binary_dest_path = binary_path.replace("RIOT/", "")
+        elffile_dest_path = elffile_path.replace("RIOT/", "")
+        hexfile_dest_path = hexfile_path.replace("RIOT/", "")
         makefile_dest_path = app_build_dir.replace("RIOT/", "")
 
         single_copy_operations = [
-            (binary_path, binary_dest_path),
+            (elffile_path, elffile_dest_path),
+            (hexfile_path, hexfile_dest_path),
             (os.path.join(app_build_dir, "Makefile"), os.path.join(makefile_dest_path, "Makefile"))
         ]
 
