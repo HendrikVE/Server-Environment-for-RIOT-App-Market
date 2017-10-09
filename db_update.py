@@ -3,7 +3,7 @@
 
 import os
 
-import config.db_config as config
+import config.config as config
 from MyDatabase import MyDatabase
 
 db = MyDatabase()
