@@ -4,7 +4,6 @@
 from __future__ import print_function
 
 import argparse
-import json
 import logging
 import os
 import sys
@@ -20,7 +19,8 @@ build_result = {
     "output_file": None,
     "output_file_extension": None,
     "output_archive": None,
-    "output_archive_extension": None
+    "output_archive_extension": None,
+    "success": False
 }
 
 CURDIR = os.path.dirname(__file__)
@@ -99,6 +99,7 @@ def main(argv):
         bu.zip_repo(stripped_repo_path, archive_path)
 
         build_result["output_archive"] = bu.file_as_base64(archive_path)
+        build_result["success"] = True
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
@@ -199,4 +200,4 @@ if __name__ == "__main__":
         logging.error(str(e), exc_info=True)
         build_result["cmd_output"] += str(e)
 
-    print (json.dumps(build_result))
+    print(build_result)

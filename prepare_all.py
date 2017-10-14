@@ -3,33 +3,41 @@
 
 from __future__ import print_function
 
+import ast
+import json
 import logging
 import multiprocessing
 import os
 from multiprocessing.pool import ThreadPool
 from subprocess import PIPE, STDOUT, Popen
 
-import time
-
+from BuildTaskStatistic import BuildTaskStatistic
 from MyDatabase import MyDatabase
 
 CURDIR = os.path.dirname(__file__)
 LOGFILE = os.path.join(CURDIR, "log/prepare_all_log.txt")
 
 db = MyDatabase()
+stat = BuildTaskStatistic()
 
 
 def main():
 
     thread_count = multiprocessing.cpu_count()
     tasks = get_build_tasks()
+
+    stat.start()
+
     execute_tasks(thread_count, tasks)
+
+    stat.stop()
+    print(stat)
 
 
 def execute_tasks(thread_count, tasks):
 
     pool = ThreadPool(thread_count)
-    results = pool.map(execute_build, tasks)
+    results = pool.map(execute_build, tasks[:4])
     pool.close()
     pool.join()
 
@@ -42,7 +50,17 @@ def execute_build((board, application)):
 
     process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
     output = process.communicate()[0]
-    print("[DONE]: Built {0} for {1} at {2}".format(application, board, time.time()))
+
+    build_result = ast.literal_eval(output)
+
+    failed = build_result["success"]
+
+    stat.add_completed_task(failed)
+    if failed:
+        print("[FAILED]: Build of {0} for {1}".format(application, board))
+
+    else:
+        print("[DONE]: Build of {0} for {1}".format(application, board))
 
 
 def get_build_tasks():
