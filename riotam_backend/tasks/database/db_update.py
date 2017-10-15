@@ -35,7 +35,7 @@ def update_modules():
     for i in range(len(config.module_directories)):
 
         module_directory = config.module_directories[i]
-        path = os.path.join(config.path_root, module_directory)
+        path = os.path.join(PROJECT_ROOT_DIR, config.path_root, module_directory)
 
         for item in os.listdir(path):
             if not os.path.isfile(os.path.join(path, item)):
