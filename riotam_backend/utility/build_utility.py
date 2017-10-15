@@ -35,7 +35,6 @@ def prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
 
     """
     try:
-        dest_path = os.path.join(dest_path, "RIOT_stripped")
         copytree(src_path, dest_path)
 
         try:
@@ -51,7 +50,7 @@ def prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
 
         for operation in single_copy_operations:
             # remove file from path, because it shouldnt be created as directory
-            copy_dest_path = os.path.join(dest_path, operation[1])
+            copy_dest_path = operation[1]
             index = copy_dest_path.rindex("/")
             path_to_create = copy_dest_path[:index]
             create_directories(path_to_create)
@@ -119,12 +118,14 @@ def get_ticket_id():
     return str(time.time()) + str(uuid.uuid4())
 
 
-def get_temporary_directory(ticket_id):
+def get_temporary_directory(path, ticket_id):
     """
     Return path to a temporary directory depending on an unique id
 
     Parameters
     ----------
+    path: string
+        Path in which the temporary directory should be
     ticket_id: string
         Unique id
 
@@ -134,7 +135,7 @@ def get_temporary_directory(ticket_id):
         Path to temporary directory
 
     """
-    return os.path.join("tmp", ticket_id)
+    return os.path.join(path, "tmp", ticket_id)
 
 
 def create_directories(path):

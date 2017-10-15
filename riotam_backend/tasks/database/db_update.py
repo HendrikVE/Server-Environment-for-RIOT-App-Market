@@ -2,9 +2,17 @@
 # -*- coding: UTF-8 -*-
 
 import os
+import sys
 
-import config.config as config
-from MyDatabase import MyDatabase
+# append root of the python code tree to sys.apth so that imports are working
+#   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
+#   which could be forget
+CUR_DIR = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, "..", "..", ".."))
+sys.path.append(PROJECT_ROOT_DIR)
+
+from riotam_backend.config import config
+from riotam_backend.common.MyDatabase import MyDatabase
 
 db = MyDatabase()
 

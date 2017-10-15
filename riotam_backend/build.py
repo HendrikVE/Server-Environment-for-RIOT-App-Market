@@ -7,10 +7,17 @@ import argparse
 import logging
 import os
 import sys
-from shutil import copytree, rmtree, copyfile
+from shutil import rmtree
 
-import utility.build_utility as bu
-from MyDatabase import MyDatabase
+# append root of the python code tree to sys.apth so that imports are working
+#   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
+#   which could be forget
+CUR_DIR = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, ".."))
+sys.path.append(PROJECT_ROOT_DIR)
+
+from riotam_backend.utility import build_utility as bu
+from riotam_backend.common.MyDatabase import MyDatabase
 
 build_result = {
     "cmd_output": "",
@@ -23,9 +30,7 @@ build_result = {
     "success": False
 }
 
-CURDIR = os.path.dirname(__file__)
-
-LOGFILE = os.path.join(CURDIR, "log/build_example_log.txt")
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build_example_log.txt")
 LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
 
 db = MyDatabase()
@@ -43,11 +48,12 @@ def main(argv):
         return
 
     board = args.board
-    application_id = args.application
+    modules = args.modules
+    main_file_content = args.main_file_content
 
     build_result["board"] = board
 
-    app_build_parent_dir = "RIOT/generated_by_riotam"
+    app_build_parent_dir = os.path.join(PROJECT_ROOT_DIR, "RIOT", "generated_by_riotam")
 
     # unique application directory name
     ticket_id = bu.get_ticket_id()
@@ -55,14 +61,16 @@ def main(argv):
     app_name = "application%s" % ticket_id
     app_build_dir = os.path.join(app_build_parent_dir, app_name)
 
-    temp_dir = bu.get_temporary_directory(ticket_id)
+    temp_dir = bu.get_temporary_directory(PROJECT_ROOT_DIR, ticket_id)
 
     build_result["application_name"] = app_name
 
-    app_path = fetch_application_path(application_id)
-    copytree(app_path, app_build_dir)
+    bu.create_directories(app_build_dir)
 
-    replace_application_name(os.path.join(app_build_dir, "Makefile"), app_name)
+    write_makefile(board, modules, app_name, app_build_dir)
+
+    with open(os.path.join(app_build_dir, "main.c"), "w") as main_file:
+        main_file.write(main_file_content)
 
     build_result["cmd_output"] += bu.execute_makefile(app_build_dir, board, app_name)
 
@@ -82,18 +90,20 @@ def main(argv):
         archive_extension = "tar"
         build_result["output_archive_extension"] = archive_extension
 
-        elffile_dest_path = elffile_path.replace("RIOT/", "")
-        hexfile_dest_path = hexfile_path.replace("RIOT/", "")
-        makefile_dest_path = app_build_dir.replace("RIOT/", "")
-
         # [(src_path, dest_path)]
+        path = os.path.join(temp_dir, "RIOT_stripped", "generated_by_riotam", app_name)
+        elffile_dest_path = bu.app_elffile_path(os.path.join(path, "bin", board), app_name)
+        hexfile_dest_path = bu.app_hexfile_path(os.path.join(path, "bin", board), app_name)
+        makefile_dest_path = path
+
         single_copy_operations = [
             (elffile_path, elffile_dest_path),
             (hexfile_path, hexfile_dest_path),
             (os.path.join(app_build_dir, "Makefile"), os.path.join(makefile_dest_path, "Makefile"))
         ]
 
-        stripped_repo_path = bu.prepare_stripped_repo("RIOT_stripped/", temp_dir, single_copy_operations, board)
+        path_stripped_riot = os.path.join(PROJECT_ROOT_DIR, "RIOT_stripped")
+        stripped_repo_path = bu.prepare_stripped_repo(path_stripped_riot, os.path.join(temp_dir, "RIOT_stripped"), single_copy_operations, board)
 
         archive_path = os.path.join(temp_dir, "RIOT_stripped.tar")
         bu.zip_repo(stripped_repo_path, archive_path)
@@ -121,10 +131,11 @@ def init_argparse():
 
     parser = argparse.ArgumentParser(description="Build RIOT OS")
 
-    parser.add_argument("--application",
-                        dest="application", action="store",
+    parser.add_argument("--modules",
+                        dest="modules", action="store",
                         type=int,
                         required=True,
+                        nargs="+",
                         help="modules to build in to the image")
 
     parser.add_argument("--board",
@@ -132,60 +143,81 @@ def init_argparse():
                         required=True,
                         help="the board for which the image should be made")
 
+    parser.add_argument("--mainfile",
+                        dest="main_file_content", action="store",
+                        required=True,
+                        help="main.c file for compiling custom RIOT OS")
+
     return parser
 
 
-def replace_application_name(path, application_name):
+def fetch_module_name(id):
     """
-    Replace application name in line which starts with "APPLICATION="
-
-    Parameters
-    ----------
-    path: string
-        Path to the file
-
-    application_name: string
-        Name of the application
-
-    """
-
-    # Save the old one to check later in case there is an error
-    copyfile(path, path + ".old")
-
-    with open(path + ".old", "r") as old_makefile:
-        with open(path, "w") as makefile:
-
-            for line in old_makefile.readlines():
-                if line.replace(" ", "").startswith("APPLICATION="):
-                    line = "APPLICATION = %s\n" % application_name
-
-                makefile.write(line)
-
-
-def fetch_application_path(id):
-    """
-    Fetch path of application from database
+    Fetch module name from database
 
     Parameters
     ----------
     id: int
-        ID of the application
+        ID of the module
 
     Returns
     -------
     string
-        Path of the application, None if not found
+        Name of the module, None if not found
 
     """
-    db.query("SELECT path FROM applications WHERE id=%s", (id,))
-    applications = db.fetchall()
+    db.query("SELECT name FROM modules WHERE id=%s", (id,))
+    names = db.fetchall()
 
-    if len(applications) != 1:
-        logging.error("error in database: len(applications != 1)")
+    if len(names) != 1:
+        logging.error("error in database: len(names != 1)")
         return None
 
     else:
-        return applications[0]["path"]
+        return names[0]["name"]
+
+
+def write_makefile(board, modules, application_name, path):
+    """
+    Write a custom makefile including board and modules
+
+    Parameters
+    ----------
+    board: string
+        Board name
+    modules: array_like with int
+        List with IDs of wanted modules
+    application_name: string
+        Name ot the application
+    path: string
+        Path the makefile is written to
+
+    """
+    filename = "Makefile"
+    with open(os.path.join(path, filename), "w") as makefile:
+
+        makefile.write("APPLICATION = " + application_name)
+        makefile.write("\n\n")
+
+        # TODO: check, if board is in database
+        makefile.write("BOARD ?= %s" % board)
+        makefile.write("\n\n")
+
+        makefile.write("RIOTBASE ?= $(CURDIR)/../..")
+        makefile.write("\n\n")
+        
+        for module in modules:
+            module_name = fetch_module_name(module)
+
+            if module_name is None:
+                build_result["cmd_output"] += "error while reading modules from database"
+                break
+
+            else :
+                makefile.write("USEMODULE += %s\n" % module_name)
+
+        makefile.write("\n")
+        makefile.write("include $(RIOTBASE)/Makefile.include")
 
 
 if __name__ == "__main__":
@@ -195,7 +227,7 @@ if __name__ == "__main__":
 
     try:
         main(sys.argv[1:])
-
+        
     except Exception as e:
         logging.error(str(e), exc_info=True)
         build_result["cmd_output"] += str(e)

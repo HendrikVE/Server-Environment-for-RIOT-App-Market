@@ -4,18 +4,24 @@
 from __future__ import print_function
 
 import ast
-import json
 import logging
 import multiprocessing
 import os
+import sys
 from multiprocessing.pool import ThreadPool
 from subprocess import PIPE, STDOUT, Popen
 
-from BuildTaskStatistic import BuildTaskStatistic
-from MyDatabase import MyDatabase
+# append root of the python code tree to sys.apth so that imports are working
+#   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
+#   which could be forget
+CUR_DIR = os.path.abspath(os.path.dirname(__file__))
+PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, "..", "..", ".."))
+sys.path.append(PROJECT_ROOT_DIR)
 
-CURDIR = os.path.dirname(__file__)
-LOGFILE = os.path.join(CURDIR, "log/prepare_all_log.txt")
+from BuildTaskStatistic import BuildTaskStatistic
+from riotam_backend.common.MyDatabase import MyDatabase
+
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log/prepare_all_log.txt")
 
 db = MyDatabase()
 stat = BuildTaskStatistic()
