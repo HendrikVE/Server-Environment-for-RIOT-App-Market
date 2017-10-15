@@ -10,6 +10,7 @@ import os
 import sys
 from multiprocessing.pool import ThreadPool
 from subprocess import PIPE, STDOUT, Popen
+from datetime import datetime
 
 # append root of the python code tree to sys.apth so that imports are working
 #   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
@@ -43,12 +44,14 @@ def main():
 def execute_tasks(thread_count, tasks):
 
     pool = ThreadPool(thread_count)
-    results = pool.map(execute_build, tasks[:4])
+    results = pool.map(execute_build, tasks[0:30])
     pool.close()
     pool.join()
 
 
 def execute_build((board, application)):
+
+    start_time = datetime.now().replace(microsecond=0)
 
     cmd = ["python", "build_example.py",
            "--application", application,
@@ -57,11 +60,15 @@ def execute_build((board, application)):
     process = Popen(cmd, stdout=PIPE, stderr=STDOUT, cwd=os.path.join(PROJECT_ROOT_DIR, "riotam_backend"))
     output = process.communicate()[0]
 
+    end_time = datetime.now().replace(microsecond=0)
+    delta = end_time - start_time
+
     build_result = ast.literal_eval(output)
 
     failed = build_result["success"]
 
-    stat.add_completed_task(failed)
+    stat.add_completed_task(delta, failed)
+
     if failed:
         print("[FAILED]: Build of {0} for {1}".format(application, board))
 
