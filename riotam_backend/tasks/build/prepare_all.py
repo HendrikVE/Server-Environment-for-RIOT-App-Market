@@ -35,6 +35,8 @@ def main():
     print("preparing build tasks...")
     tasks = get_build_tasks()
 
+    print("got %s tasks" % len(tasks))
+
     stat.start()
 
     print("starting worker threads...")
@@ -68,16 +70,16 @@ def execute_build((board, application)):
 
     build_result = ast.literal_eval(output)
 
-    failed = build_result["success"]
+    failed = not build_result["success"]
 
     stat.add_completed_task(delta, failed)
 
     if failed:
         print("[FAILED]: Build of {0} for {1}".format(application, board))
+        print(build_result["cmd_output"])
 
     else:
         print("[DONE]:   Build of {0} for {1}".format(application, board))
-
 
 def get_build_tasks():
 
