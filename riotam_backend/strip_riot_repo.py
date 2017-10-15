@@ -18,12 +18,15 @@ from riotam_backend.config import strip_config as config
 
 
 def main():
+
+    path_riot = os.path.join(PROJECT_ROOT_DIR, "RIOT")
+    path_riot_stripped = os.path.join(PROJECT_ROOT_DIR, "RIOT_stripped")
     
     try:
-        if os.path.exists("RIOT_stripped"):
-            rmtree("RIOT_stripped")
+        if os.path.exists(path_riot_stripped):
+            rmtree(path_riot_stripped)
             
-        copytree("RIOT", "RIOT_stripped", ignore=config.ignore_patterns)
+        copytree(path_riot, path_riot_stripped, ignore=config.ignore_patterns)
         
         path = "RIOT_stripped/Makefile.include"
         # Save the old one to check later in case there is an error
