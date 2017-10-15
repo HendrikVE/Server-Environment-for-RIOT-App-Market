@@ -31,10 +31,13 @@ stat = BuildTaskStatistic()
 def main():
 
     thread_count = multiprocessing.cpu_count()
+
+    print("preparing build tasks...")
     tasks = get_build_tasks()
 
     stat.start()
 
+    print("starting worker threads...")
     execute_tasks(thread_count, tasks)
 
     stat.stop()
@@ -44,7 +47,7 @@ def main():
 def execute_tasks(thread_count, tasks):
 
     pool = ThreadPool(thread_count)
-    results = pool.map(execute_build, tasks[0:5])
+    results = pool.map(execute_build, tasks)
     pool.close()
     pool.join()
 
@@ -78,15 +81,29 @@ def execute_build((board, application)):
 
 def get_build_tasks():
 
-    boards = fetch_boards()
+    # boards = fetch_boards()
     applications = fetch_applications()
 
     build_tasks = []
-    for board in boards:
-        for application in applications:
-            build_tasks.append((board["internal_name"], str(application["id"])))
+    for application in applications:
+
+        app_dir = application["path"]
+
+        for board in get_supported_boards(app_dir):
+            build_tasks.append((board, str(application["id"])))
 
     return build_tasks
+
+
+def get_supported_boards(app_dir):
+
+    # command to get supported devices from .murdock script in RIOT repository within get_supported_boards()
+    # 2>/dev/null replaced by stderr=open(os.devnull, 'w')
+    dev_null = open(os.devnull, "w")
+    process = Popen(["make", "--no-print-directory", "-C", app_dir, "info-boards-supported"], stdout=PIPE, stderr=dev_null)
+    output = process.communicate()[0]
+
+    return output.split()
 
 
 def fetch_boards():

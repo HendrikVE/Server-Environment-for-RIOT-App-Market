@@ -29,6 +29,10 @@ class MyDatabase(object):
 
         self._db_cursor = self._db_connection.cursor(cursorclass=MySQLdb.cursors.DictCursor)
 
+    def __del__(self):
+        self._db_cursor.close()
+        self._db_connection.close()
+
     def query(self, query, params = ""):
         return self._db_cursor.execute(query, params)
 
@@ -37,7 +41,3 @@ class MyDatabase(object):
 
     def commit(self):
         return self._db_connection.commit()
-
-    def __del__(self):
-        self._db_cursor.close()
-        self._db_connection.close()
