@@ -28,7 +28,7 @@ def main():
             
         copytree(path_riot, path_riot_stripped, ignore=config.ignore_patterns)
         
-        path = "RIOT_stripped/Makefile.include"
+        path = os.path.join(path_riot_stripped, "Makefile.include")
         # Save the old one to check later in case there is an error
         copyfile(path, path + '.old')
 
