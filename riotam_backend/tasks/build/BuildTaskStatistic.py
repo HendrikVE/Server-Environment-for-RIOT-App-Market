@@ -32,11 +32,16 @@ class BuildTaskStatistic(object):
 
     _current_min_execute_time = timedelta.max
     _current_max_execute_time = timedelta.min
-    _execute_times = []
+
+    _build_times = []
+    _failed_build_times = []
 
     _active = False
     _finished = False
     _lock = thread.allocate_lock()
+
+    _average_execute_time = None
+    _execute_time_failed_builds = None
 
     def start(self):
 
@@ -56,69 +61,92 @@ class BuildTaskStatistic(object):
 
         self._lock.acquire()
 
-        print(execute_time)
-
         self._build_count += 1
         if failed:
             self._build_fail_count += 1
+            self._failed_build_times.append(execute_time)
 
         else:
             # only count valid build times
             self._current_min_execute_time = min(self._current_min_execute_time, execute_time)
             self._current_max_execute_time = max(self._current_max_execute_time, execute_time)
-            self._execute_times.append(execute_time)
+            self._build_times.append(execute_time)
 
         self._lock.release()
 
+    def _update_variables(self):
+
+        self._average_execute_time = average_timedelta(self._build_times)
+
+        print(self._failed_build_times)
+
+        self._execute_time_failed_builds = sum(self._failed_build_times, timedelta(0))
+
     def __str__(self):
+
+        self._update_variables()
 
         if not self._active and not self._finished:
             return "%s not initialized yet" % self.__class__.__name__
 
         elif self._active and not self._finished:
+
             delta = datetime.now().replace(microsecond=0) - self._start_time
             elapsed_time_string = timedelta_to_formatted_string(delta)
 
-            average_execute_time = average_timedelta(self._execute_times)
             return textwrap.dedent("""
                 ################STATISTICS################
-                     running since: {0}
-                      elapsed time: {1}
-                    min build time: {2}
-                    max build time: {3}
-                average build time: {4}
-                      total builds: {5}
-                     failed builds: {6}
+                task
+                    running since: {0}
+                    elapsed time:  {1}
+                    
+                build times
+                    min build time:     {2}
+                    max build time:     {3}
+                    average build time: {4}
+                    sum failed builds:  {5} (sum of threads by multithreading!)
+                    
+                build count
+                    total builds:  {6}
+                    failed builds: {7}
                 ##########################################
                 """.format(datetime.strftime(self._start_time, "%Y-%m-%d %H:%M:%S"),
                            elapsed_time_string,
                            timedelta_to_formatted_string(self._current_min_execute_time),
                            timedelta_to_formatted_string(self._current_max_execute_time),
-                           timedelta_to_formatted_string(average_execute_time),
+                           timedelta_to_formatted_string(self._average_execute_time),
+                           timedelta_to_formatted_string(self._execute_time_failed_builds),
                            self._build_count,
                            self._build_fail_count))
 
         elif self._finished:
+
             delta = self._end_time - self._start_time
             elapsed_time_string = timedelta_to_formatted_string(delta)
 
-            average_execute_time = average_timedelta(self._execute_times)
             return textwrap.dedent("""
                 ################STATISTICS################
-                        started at: {0}
-                       finished at: {1}
-                    min build time: {2}
-                    max build time: {3}
-                average build time: {4}
-                      elapsed time: {5}
-                      total builds: {6}
-                     failed builds: {7}
+                task
+                    started at:   {0}
+                    finished at:  {1}
+                    elapsed time: {2}
+                    
+                build times
+                    min build time:     {3}
+                    max build time:     {4}
+                    average build time: {5}
+                    sum failed builds:  {6} (sum of threads by multithreading!)
+                    
+                build count
+                    total builds:  {7}
+                    failed builds: {8}
                 ##########################################
                 """.format(datetime.strftime(self._start_time, "%Y-%m-%d %H:%M:%S"),
                            datetime.strftime(self._end_time, "%Y-%m-%d %H:%M:%S"),
+                           elapsed_time_string,
                            timedelta_to_formatted_string(self._current_min_execute_time),
                            timedelta_to_formatted_string(self._current_max_execute_time),
-                           timedelta_to_formatted_string(average_execute_time),
-                           elapsed_time_string,
+                           timedelta_to_formatted_string(self._average_execute_time),
+                           timedelta_to_formatted_string(self._execute_time_failed_builds),
                            self._build_count,
                            self._build_fail_count))

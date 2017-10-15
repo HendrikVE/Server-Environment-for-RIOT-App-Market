@@ -44,7 +44,7 @@ def main():
 def execute_tasks(thread_count, tasks):
 
     pool = ThreadPool(thread_count)
-    results = pool.map(execute_build, tasks[0:30])
+    results = pool.map(execute_build, tasks[0:5])
     pool.close()
     pool.join()
 
