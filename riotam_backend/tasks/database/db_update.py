@@ -62,7 +62,7 @@ def update_boards():
 
     db.query("TRUNCATE boards")
     
-    path = os.path.join(config.path_root, "boards")
+    path = os.path.join(PROJECT_ROOT_DIR, config.path_root, "boards")
 
     for item in os.listdir(path):
         if not os.path.isfile(os.path.join(path, item)) and not item.endswith("-common"):
@@ -84,7 +84,7 @@ def update_applications():
     for i in range(len(config.application_directories)):
 
         application_directory = config.application_directories[i]
-        path = os.path.join(config.path_root, application_directory)
+        path = os.path.join(PROJECT_ROOT_DIR, config.path_root, application_directory)
 
         for item in os.listdir(path):
             if not os.path.isfile(os.path.join(path, item)):
