@@ -26,13 +26,13 @@ class BuildTaskStatistic(object):
     def start(self):
 
         if not self._finished and not self._active:
-            self._start_time = datetime.now()
+            self._start_time = datetime.now().replace(microsecond=0)
             self._active = True
 
     def stop(self):
 
         if self._active and not self._finished:
-            self._end_time = datetime.now()
+            self._end_time = datetime.now().replace(microsecond=0)
 
             self._active = False
             self._finished = True
@@ -49,7 +49,7 @@ class BuildTaskStatistic(object):
             return "%s not initialized yet" % self.__class__.__name__
 
         elif self._active and not self._finished:
-            delta = datetime.now() - self._start_time
+            delta = datetime.now().replace(microsecond=0) - self._start_time
             elapsed_time_string = timedelta_to_formatted_string(delta)
             return textwrap.dedent("""
                 ################STATISTICS################

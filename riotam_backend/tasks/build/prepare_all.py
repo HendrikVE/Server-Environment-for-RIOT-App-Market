@@ -21,7 +21,7 @@ sys.path.append(PROJECT_ROOT_DIR)
 from BuildTaskStatistic import BuildTaskStatistic
 from riotam_backend.common.MyDatabase import MyDatabase
 
-LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log/prepare_all_log.txt")
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "prepare_all_log.txt")
 
 db = MyDatabase()
 stat = BuildTaskStatistic()
@@ -54,7 +54,7 @@ def execute_build((board, application)):
            "--application", application,
            "--board", board]
 
-    process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
+    process = Popen(cmd, stdout=PIPE, stderr=STDOUT, cwd=os.path.join(PROJECT_ROOT_DIR, "riotam_backend"))
     output = process.communicate()[0]
 
     build_result = ast.literal_eval(output)
@@ -66,7 +66,7 @@ def execute_build((board, application)):
         print("[FAILED]: Build of {0} for {1}".format(application, board))
 
     else:
-        print("[DONE]: Build of {0} for {1}".format(application, board))
+        print("[DONE]:   Build of {0} for {1}".format(application, board))
 
 
 def get_build_tasks():
