@@ -7,7 +7,20 @@ import thread
 
 
 def timedelta_to_formatted_string(delta):
+    """
+    Format timedelta to string like hours:minutes:seconds
 
+    Parameters
+    ----------
+    delta: timedelta
+        timedelta to format
+
+    Returns
+    -------
+    string
+        Formatted string
+
+    """
     total_seconds = delta.total_seconds()
     hours, remainder = divmod(total_seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
@@ -15,7 +28,20 @@ def timedelta_to_formatted_string(delta):
 
 
 def average_timedelta(deltas):
+    """
+    Calculate average of list of timedelta
 
+    Parameters
+    ----------
+    deltas: array_like
+        List of timedelta
+
+    Returns
+    -------
+    int
+        Average timedelta
+
+    """
     # start sum with "empty" timedelta instead of 0 as integer
     time_sum = sum(deltas, timedelta(0))
 
@@ -23,7 +49,19 @@ def average_timedelta(deltas):
 
 
 class BuildTaskStatistic(object):
+    """
+    Class to get some statistic about time and amount of tasks
 
+    Methods
+    -------
+    start()
+        Start time measurement
+    stop()
+        Stop time measurement
+    add_completed_task(execute_time, failed=False)
+        Add a completed task to update internal values
+
+    """
     _start_time = None
     _end_time = None
 
@@ -44,12 +82,20 @@ class BuildTaskStatistic(object):
     _execute_time_failed_builds = None
 
     def start(self):
+        """
+        Start time measurement
+
+        """
 
         if not self._finished and not self._active:
             self._start_time = datetime.now().replace(microsecond=0)
             self._active = True
 
     def stop(self):
+        """
+        Stop time measurement
+
+        """
 
         if self._active and not self._finished:
             self._end_time = datetime.now().replace(microsecond=0)
@@ -58,7 +104,18 @@ class BuildTaskStatistic(object):
             self._finished = True
 
     def add_completed_task(self, execute_time, failed=False):
+        """
+        Add a completed task to update internal values
 
+        Parameters
+        ----------
+        execute_time: timedelta
+            Elapsed time in form of timedelta
+
+        failed: bool (default =False)
+            Set true if task failed
+
+        """
         self._lock.acquire()
 
         self._build_count += 1
@@ -75,10 +132,12 @@ class BuildTaskStatistic(object):
         self._lock.release()
 
     def _update_variables(self):
+        """
+        Recalculate internal values
+
+        """
 
         self._average_execute_time = average_timedelta(self._build_times)
-
-        print(self._failed_build_times)
 
         self._execute_time_failed_builds = sum(self._failed_build_times, timedelta(0))
 

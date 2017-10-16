@@ -47,7 +47,18 @@ def main():
 
 
 def execute_tasks(thread_count, tasks):
+    """
+    Execute given tasks by threadpool
 
+    Parameters
+    ----------
+    thread_count: int
+        Amount of threads to be used within threadpool
+
+    tasks: array_like
+        List of (board, applications) tuples
+
+    """
     pool = ThreadPool(thread_count)
     results = pool.map(execute_build, tasks)
     pool.close()
@@ -55,7 +66,15 @@ def execute_tasks(thread_count, tasks):
 
 
 def execute_build((board, application)):
+    """
+    Execute a given build task
 
+    Parameters
+    ----------
+    (board, application): tuple
+        Tuple containing a board and an application
+
+    """
     start_time = datetime.now().replace(microsecond=0)
 
     cmd = ["python", "build_example.py",
@@ -81,9 +100,17 @@ def execute_build((board, application)):
     else:
         print("[DONE]:   Build of {0} for {1}".format(application, board))
 
-def get_build_tasks():
 
-    # boards = fetch_boards()
+def get_build_tasks():
+    """
+    Generate build tasks
+
+    Returns
+    -------
+    array_like
+        List of (board, applications) tuples
+
+    """
     applications = fetch_applications()
 
     build_tasks = []
@@ -98,7 +125,20 @@ def get_build_tasks():
 
 
 def get_supported_boards(app_dir):
+    """
+    Get all supported boards for an application
 
+    Parameters
+    ----------
+    app_dir: string
+        Path to the application directory
+
+    Returns
+    -------
+    array_like
+        List of board names of supported boards
+
+    """
     # command to get supported devices from .murdock script in RIOT repository within get_supported_boards()
     # 2>/dev/null replaced by stderr=open(os.devnull, 'w')
     dev_null = open(os.devnull, "w")
