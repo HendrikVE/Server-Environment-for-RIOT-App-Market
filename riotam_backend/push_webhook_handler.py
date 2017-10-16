@@ -9,6 +9,7 @@ from subprocess import Popen, PIPE, STDOUT
 
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 PATH_RIOTAM_BACKEND = os.path.normpath(os.path.join(CUR_DIR, ".."))
+LOGFILE = os.path.join(PATH_RIOTAM_BACKEND, "log", "push_webhook_handler_log.txt")
 
 
 def main():
@@ -61,7 +62,7 @@ def execute_command(cmd, cwd=None):
 
 if __name__ == "__main__":
 
-    logging.basicConfig(filename="log/push_webhook_handler_log.txt", format="%(asctime)s [%(levelname)s]: %(message)s",
+    logging.basicConfig(filename=LOGFILE, format="%(asctime)s [%(levelname)s]: %(message)s",
                         datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
 
     try:
