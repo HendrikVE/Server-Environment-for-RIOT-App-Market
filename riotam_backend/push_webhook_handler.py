@@ -38,6 +38,9 @@ def main():
     output = execute_command(["python", "strip_riot_repo.py"], os.path.join(PATH_RIOTAM_BACKEND, "riotam_backend"))
     logging.debug("STRIP_RIOT_REPO.py:\n" + output)
 
+    # give calling script from frontend an answer
+    print("updated backend sucessfully")
+
 
 def execute_command(cmd, cwd=None):
     """
