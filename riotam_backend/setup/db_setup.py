@@ -6,8 +6,11 @@
 from __future__ import print_function
 
 import MySQLdb
+import os
 
 import db_config as config
+
+CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 
 db = MySQLdb.connect(config.db_config["host"],
                      config.db_config["user_backend"],
@@ -18,9 +21,9 @@ db = MySQLdb.connect(config.db_config["host"],
 db_cursor = db.cursor()
 
 sql_file_list = [
-    "database/modules.sql",
-    "database/boards.sql",
-    "database/applications.sql"
+    os.path.join(CUR_DIR, "sql", "modules.sql"),
+    os.path.join(CUR_DIR, "sql", "boards.sql"),
+    os.path.join(CUR_DIR, "sql", "applications.sql")
 ]
 
 for sql_file_path in sql_file_list:

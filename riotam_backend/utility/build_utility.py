@@ -6,11 +6,11 @@ import errno
 import glob
 import logging
 import os
-import subprocess
 import tarfile
 import time
 import uuid
 from shutil import copytree, rmtree, copyfile
+from subprocess import Popen, PIPE, STDOUT
 
 
 def prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
@@ -209,5 +209,5 @@ def execute_makefile(app_build_dir, board, app_name):
            "BINDIRBASE=%s" % bindirbase,
            "ELFFILE=%s" % elffile]
 
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
     return process.communicate()[0]
