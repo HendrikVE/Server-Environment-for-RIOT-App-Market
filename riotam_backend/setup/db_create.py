@@ -15,8 +15,13 @@ import db_config as config
 
 def main():
 
-    privileged_user = raw_input("Please enter name of privileged database user: ")
-    privileged_password = getpass()
+    if config.db_config["user_privileged"] == "USER_PRIVILEGED":
+        privileged_user = raw_input("Please enter name of privileged database user: ")
+        privileged_password = getpass()
+
+    else:
+        privileged_user = config.db_config["user_privileged"]
+        privileged_password = config.db_config["passwd_privileged"]
 
     db = MySQLdb.connect(user=privileged_user, passwd=privileged_password)
     db_cursor = db.cursor()

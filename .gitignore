@@ -6,5 +6,5 @@ RIOT_stripped/
 RIOT_stripped.zip
 
 # ignore config files containing passwords
-*/config.py
-*/db_config.py
+config.py
+db_config.py
