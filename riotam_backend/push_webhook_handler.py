@@ -24,7 +24,7 @@ def main():
     logging.debug("UPDATE SUBMODULES:\n" + output)
 
     """SETUP DATABASE"""
-    output = execute_command(["python", "db_create.py", "--user", "root", "--password", "eBXa1zG2jlfwt1P71Udy"], os.path.join(PATH_RIOTAM_BACKEND, "riotam_backend", "setup"))
+    output = execute_command(["python", "db_create.py", "--user", "root", "--password", ""], os.path.join(PATH_RIOTAM_BACKEND, "riotam_backend", "setup"))
     logging.debug("DB_CREATE:\n" + output)
 
     output = execute_command(["python", "db_setup.py"], os.path.join(PATH_RIOTAM_BACKEND, "riotam_backend", "setup"))

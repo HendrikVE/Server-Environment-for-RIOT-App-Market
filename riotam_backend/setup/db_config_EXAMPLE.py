@@ -10,4 +10,7 @@ db_config = {
 
     "user_website": "riotam_website",
     "passwd_website": "PASSWORD_WEBSITE",
+
+    "user_privileged": "USER_PRIVILEGED",
+    "passwd_privileged": "PASSWORD_PRIVILEGED"
 }
