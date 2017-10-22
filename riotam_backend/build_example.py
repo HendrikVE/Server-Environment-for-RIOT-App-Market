@@ -69,35 +69,16 @@ def main(argv):
     build_result["cmd_output"] += bu.execute_makefile(app_build_dir, board, app_name)
 
     try:
-        bin_dir = os.path.join(app_build_dir, "bin", board)
-        elffile_path = bu.app_elffile_path(bin_dir, app_name)
-        hexfile_path = bu.app_hexfile_path(bin_dir, app_name)
-
-        """ ARCHIVE FILE """
-        archive_extension = "tar"
-        build_result["output_archive_extension"] = archive_extension
-
-        app_copy_dir = os.path.join(temp_dir, "RIOT_stripped", "generated_by_riotam", app_name)
-        bin_copy_dir = os.path.join(app_copy_dir, "bin", board)
-
-        elffile_dest_path = bu.app_elffile_path(bin_copy_dir, app_name)
-        hexfile_dest_path = bu.app_hexfile_path(bin_copy_dir, app_name)
-        makefile_dest_path = app_copy_dir
-
-        # [(src_path, dest_path)]
-        single_copy_operations = [
-            (elffile_path, elffile_dest_path),
-            (hexfile_path, hexfile_dest_path),
-            (os.path.join(app_build_dir, "Makefile"), os.path.join(makefile_dest_path, "Makefile"))
-        ]
-
-        path_stripped_riot = os.path.join(PROJECT_ROOT_DIR, "RIOT_stripped")
-        stripped_repo_path = bu.prepare_stripped_repo(path_stripped_riot, os.path.join(temp_dir, "RIOT_stripped"), single_copy_operations, board)
+        stripped_repo_path = bu.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
 
         archive_path = os.path.join(temp_dir, "RIOT_stripped.tar")
         bu.zip_repo(stripped_repo_path, archive_path)
 
+        archive_extension = "tar"
+
+        build_result["output_archive_extension"] = archive_extension
         build_result["output_archive"] = bu.file_as_base64(archive_path)
+
         build_result["success"] = True
 
     except Exception as e:

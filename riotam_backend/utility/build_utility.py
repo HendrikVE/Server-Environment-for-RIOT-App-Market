@@ -13,60 +13,52 @@ from shutil import copytree, rmtree, copyfile
 from subprocess import Popen, PIPE, STDOUT
 
 
-def prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
+def generate_stripped_repo(app_build_dir, stripped_riot_dir, temp_dir, board, app_name):
     """
-    Strip a RIOT repositiory to a minimal version, so that flashing still works
+    Create stripped version of the riot repository and return the path to it
 
     Parameters
     ----------
-    src_path: string
-        Path to riot repository you want to be stripped
-    dest_path: string
-        Path to store the stripped riot repository
-    single_copy_operations: array_like
-        List of (src_path, dest_path) tuples to copy files
+    app_build_dir: string
+        Directory to take application data from
+    stripped_riot_dir: string
+        Directory in which the bare stripped RIOT repository is stored
+    temp_dir: string
+        Path to temporary directory of the requested application
     board: string
-        Name of the board
+        Name of the Board
+    app_name: string
+        Name of the application
 
     Returns
     -------
     string
-        Path to stripped RIOT repository
+        Path to the generated stripped RIOT repository
 
     """
-    try:
-        copytree(src_path, dest_path)
+    bin_dir = os.path.join(app_build_dir, "bin", board)
+    elffile_path = app_elffile_path(bin_dir, app_name)
+    hexfile_path = app_hexfile_path(bin_dir, app_name)
 
-        try:
-            # remove all unnecessary boards
-            path_boards = os.path.join(dest_path, "boards")
-            for item in os.listdir(path_boards):
-                if not os.path.isfile(os.path.join(path_boards, item)):
-                    if (item != "include") and (not "common" in item) and (item != board):
-                        rmtree(os.path.join(path_boards, item))
+    app_copy_dir = os.path.join(temp_dir, "RIOT_stripped", "generated_by_riotam", app_name)
+    bin_copy_dir = os.path.join(app_copy_dir, "bin", board)
 
-        except Exception as e:
-            logging.error(str(e), exc_info=True)
+    elffile_dest_path = app_elffile_path(bin_copy_dir, app_name)
+    hexfile_dest_path = app_hexfile_path(bin_copy_dir, app_name)
+    makefile_dest_path = app_copy_dir
 
-        for operation in single_copy_operations:
-            # remove file from path, because it shouldnt be created as directory
-            copy_dest_path = operation[1]
-            index = copy_dest_path.rindex("/")
-            path_to_create = copy_dest_path[:index]
-            create_directories(path_to_create)
+    # [(src_path, dest_path)]
+    single_copy_operations = [
+        (elffile_path, elffile_dest_path),
+        (hexfile_path, hexfile_dest_path),
+        (os.path.join(app_build_dir, "Makefile"), os.path.join(makefile_dest_path, "Makefile"))
+    ]
 
-            try:
-                copyfile(operation[0], copy_dest_path)
+    path_stripped_riot = os.path.join(stripped_riot_dir, "RIOT_stripped")
+    stripped_repo_path = _prepare_stripped_repo(path_stripped_riot, os.path.join(temp_dir, "RIOT_stripped"),
+                                                  single_copy_operations, board)
 
-            except Exception as e:
-                logging.debug(str(e))
-
-        return dest_path
-
-    except Exception as e:
-        logging.error(str(e), exc_info=True)
-
-    return None
+    return stripped_repo_path
 
 
 def zip_repo(src_path, dest_path):
@@ -172,11 +164,6 @@ def app_hexfile_path(path, app_name):
     return _rreplace(elffile_path, ".elf", ".hex", 1)
 
 
-def _rreplace(string, old, new, occurrences):
-    list = string.rsplit(old, occurrences)
-    return new.join(list)
-
-
 def execute_makefile(app_build_dir, board, app_name):
     """
     Run make on given makefile and override variables
@@ -211,3 +198,64 @@ def execute_makefile(app_build_dir, board, app_name):
 
     process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
     return process.communicate()[0]
+
+
+def _prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
+    """
+    Strip a RIOT repositiory to a minimal version, so that flashing still works
+
+    Parameters
+    ----------
+    src_path: string
+        Path to riot repository you want to be stripped
+    dest_path: string
+        Path to store the stripped riot repository
+    single_copy_operations: array_like
+        List of (src_path, dest_path) tuples to copy files
+    board: string
+        Name of the board
+
+    Returns
+    -------
+    string
+        Path to stripped RIOT repository
+
+    """
+    try:
+        copytree(src_path, dest_path)
+
+        try:
+            # remove all unnecessary boards
+            path_boards = os.path.join(dest_path, "boards")
+            for item in os.listdir(path_boards):
+                if not os.path.isfile(os.path.join(path_boards, item)):
+                    if (item != "include") and (not "common" in item) and (item != board):
+                        rmtree(os.path.join(path_boards, item))
+
+        except Exception as e:
+            logging.error(str(e), exc_info=True)
+
+        for operation in single_copy_operations:
+            # remove file from path, because it shouldnt be created as directory
+            copy_dest_path = operation[1]
+            index = copy_dest_path.rindex("/")
+            path_to_create = copy_dest_path[:index]
+            create_directories(path_to_create)
+
+            try:
+                copyfile(operation[0], copy_dest_path)
+
+            except Exception as e:
+                logging.debug(str(e))
+
+        return dest_path
+
+    except Exception as e:
+        logging.error(str(e), exc_info=True)
+
+    return None
+
+
+def _rreplace(string, old, new, occurrences):
+    list = string.rsplit(old, occurrences)
+    return new.join(list)
