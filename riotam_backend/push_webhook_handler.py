@@ -9,7 +9,9 @@ from subprocess import Popen, PIPE, STDOUT
 
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 PATH_RIOTAM_BACKEND = os.path.normpath(os.path.join(CUR_DIR, ".."))
-LOGFILE = os.path.join(PATH_RIOTAM_BACKEND, "log", "push_webhook_handler_log.txt")
+PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, ".."))
+
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "push_webhook_handler_log.txt")
 
 
 def main():
@@ -17,10 +19,10 @@ def main():
     Routine to update backend repository. Gets called by push_webhook_handler.py inside frontend"""
 
     """UPDATE GIT REPOSITORY"""
-    output = execute_command(["git", "-C", PATH_RIOTAM_BACKEND, "pull"])
+    output = execute_command(["git", "-C", PROJECT_ROOT_DIR, "pull"])
     logging.debug("PULL BACKEND REPO:\n" + output)
 
-    output = execute_command(["git", "-C", PATH_RIOTAM_BACKEND, "submodule", "update", "--recursive", "--remote"])
+    output = execute_command(["git", "-C", PROJECT_ROOT_DIR, "submodule", "update", "--recursive", "--remote"])
     logging.debug("UPDATE SUBMODULES:\n" + output)
 
     """SETUP DATABASE"""
