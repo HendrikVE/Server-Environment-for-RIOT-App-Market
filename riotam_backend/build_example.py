@@ -23,10 +23,7 @@ build_result = {
     "cmd_output": "",
     "board": None,
     "application_name": "application",
-    "output_file": None,
-    "output_file_extension": None,
     "output_archive": None,
-    "output_archive_extension": None,
     "success": False
 }
 
@@ -72,16 +69,9 @@ def main(argv):
     build_result["cmd_output"] += bu.execute_makefile(app_build_dir, board, app_name)
 
     try:
-        """ IMAGE FILE """
-        file_extension = "elf"  # TODO: or hex
-        build_result["output_file_extension"] = file_extension
-
         bin_dir = os.path.join(app_build_dir, "bin", board)
         elffile_path = bu.app_elffile_path(bin_dir, app_name)
         hexfile_path = bu.app_hexfile_path(bin_dir, app_name)
-
-        # TODO: remove
-        build_result["output_file"] = bu.file_as_base64(elffile_path)
 
         """ ARCHIVE FILE """
         archive_extension = "tar"
