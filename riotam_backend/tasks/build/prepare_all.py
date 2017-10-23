@@ -23,7 +23,7 @@ from BuildTaskStatistic import BuildTaskStatistic
 from riotam_backend.common.MyDatabase import MyDatabase
 
 LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "prepare_all_log.txt")
-USING_CACHE = False
+USING_CACHE = True
 
 db = MyDatabase()
 stat = BuildTaskStatistic()
