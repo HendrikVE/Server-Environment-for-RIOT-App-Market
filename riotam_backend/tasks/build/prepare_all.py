@@ -23,6 +23,7 @@ from BuildTaskStatistic import BuildTaskStatistic
 from riotam_backend.common.MyDatabase import MyDatabase
 
 LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "prepare_all_log.txt")
+USING_CACHE = False
 
 db = MyDatabase()
 stat = BuildTaskStatistic()
@@ -33,11 +34,13 @@ def main():
     thread_count = multiprocessing.cpu_count()
 
     print("preparing build tasks...")
-    tasks = get_build_tasks()
+    tasks = get_build_tasks()[:2]
 
     print("got %s tasks" % len(tasks))
 
     stat.start()
+
+    print("using cache: %s" % str(USING_CACHE))
 
     print("starting worker threads...")
     execute_tasks(thread_count, tasks)
@@ -77,7 +80,11 @@ def execute_build((board, application)):
     """
     start_time = datetime.now().replace(microsecond=0)
 
-    cmd = ["python", "build_example.py",
+    script = "build_example.py"
+    if USING_CACHE:
+        script = "build_example_cached.py"
+
+    cmd = ["python", script,
            "--application", application,
            "--board", board]
 
@@ -88,6 +95,9 @@ def execute_build((board, application)):
     delta = end_time - start_time
 
     build_result = ast.literal_eval(output)
+
+    if USING_CACHE and build_result["extra"] is not None:
+        print(build_result["extra"])
 
     failed = not build_result["success"]
 

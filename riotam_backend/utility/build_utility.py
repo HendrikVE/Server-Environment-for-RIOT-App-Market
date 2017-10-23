@@ -187,8 +187,8 @@ def execute_makefile(app_build_dir, board, app_name):
     # set ELFFILE the same way as RIOT Makefile.include (path to .hex file is extracted from this information)
     app_build_dir_abs_path = os.path.abspath(app_build_dir)
 
-    bindirbase = os.path.join(app_build_dir_abs_path, "bin")
-    bindir = os.path.join(bindirbase, board)
+    bindirbase = get_bindirbase(app_build_dir_abs_path)
+    bindir = get_bindir(app_build_dir_abs_path, board)
     elffile = app_elffile_path(bindir, app_name)
 
     cmd = ["make", "--directory=%s" % app_build_dir,
@@ -198,6 +198,18 @@ def execute_makefile(app_build_dir, board, app_name):
 
     process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
     return process.communicate()[0]
+
+
+def get_bindirbase(app_build_dir):
+    return os.path.join(app_build_dir, "bin")
+
+
+def get_bindir(app_build_dir, board):
+
+    bindirbase = get_bindirbase(app_build_dir)
+    bindir = os.path.join(bindirbase, board)
+
+    return bindir
 
 
 def _prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
