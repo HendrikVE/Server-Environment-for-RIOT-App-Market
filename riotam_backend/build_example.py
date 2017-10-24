@@ -16,8 +16,10 @@ CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, ".."))
 sys.path.append(PROJECT_ROOT_DIR)
 
-from riotam_backend.utility import build_utility as bu
+from riotam_backend.utility import build_utility as b_util
+from riotam_backend.utility import application_info_utility as a_util
 from riotam_backend.common.MyDatabase import MyDatabase
+from riotam_backend.common.ModuleCache import ModuleCache
 
 build_result = {
     "cmd_output": "",
@@ -31,6 +33,9 @@ LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build_example_log.txt")
 LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
 
 db = MyDatabase()
+
+cache_dir = os.path.join(PROJECT_ROOT_DIR, ".cache")
+cache = ModuleCache(cache_dir)
 
 
 def main(argv):
@@ -46,40 +51,70 @@ def main(argv):
 
     board = args.board
     application_id = args.application
+    using_cache = args.caching
 
     build_result["board"] = board
 
     app_build_parent_dir = os.path.join(PROJECT_ROOT_DIR, "RIOT", "generated_by_riotam")
 
     # unique application directory name
-    ticket_id = bu.get_ticket_id()
+    ticket_id = b_util.get_ticket_id()
 
     app_name = "application%s" % ticket_id
     app_build_dir = os.path.join(app_build_parent_dir, app_name)
 
-    temp_dir = bu.get_temporary_directory(PROJECT_ROOT_DIR, ticket_id)
+    temp_dir = b_util.get_temporary_directory(PROJECT_ROOT_DIR, ticket_id)
 
     build_result["application_name"] = app_name
 
     app_path = os.path.join(PROJECT_ROOT_DIR, fetch_application_path(application_id))
     copytree(app_path, app_build_dir)
 
+    used_modules = None
+    if using_cache:
+
+        used_modules = a_util.get_used_modules(db, application_id)
+
+        app_build_dir_abs_path = os.path.abspath(app_build_dir)
+        bindir = b_util.get_bindir(app_build_dir_abs_path, board)
+
+        for module in used_modules:
+            cached_module_path = cache.get_cache_entry(board, module)
+
+            if cached_module_path is not None:
+
+                build_result["extra"] = "using cache entry from %s" % cached_module_path
+
+                dest_path_module = os.path.join(bindir, module)
+
+                try:
+                    rmtree(dest_path_module)
+                except:
+                    pass
+
+                copytree(cached_module_path, dest_path_module)
+
     replace_application_name(os.path.join(app_build_dir, "Makefile"), app_name)
 
-    build_result["cmd_output"] += bu.execute_makefile(app_build_dir, board, app_name)
+    build_result["cmd_output"] += b_util.execute_makefile(app_build_dir, board, app_name)
 
     try:
-        stripped_repo_path = bu.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
+        stripped_repo_path = b_util.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
 
         archive_path = os.path.join(temp_dir, "RIOT_stripped.tar")
-        bu.zip_repo(stripped_repo_path, archive_path)
+        b_util.zip_repo(stripped_repo_path, archive_path)
 
         archive_extension = "tar"
 
         build_result["output_archive_extension"] = archive_extension
-        build_result["output_archive"] = bu.file_as_base64(archive_path)
+        build_result["output_archive"] = b_util.file_as_base64(archive_path)
 
         build_result["success"] = True
+
+        if using_cache:
+            # cache modules of successful tasks
+            for module in used_modules:
+                cache.cache_module(app_build_dir, board, module)
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
@@ -111,6 +146,11 @@ def init_argparse():
                         dest="board", action="store",
                         required=True,
                         help="the board for which the image should be made")
+
+    parser.add_argument("--caching",
+                        dest="caching", action="store_true", default=False,
+                        required=False,
+                        help="wether to use cache or not")
 
     return parser
 
@@ -169,7 +209,7 @@ def fetch_application_path(id):
 
 
 if __name__ == "__main__":
-    
+
     logging.basicConfig(filename=LOGFILE, format="%(asctime)s [%(levelname)s]: %(message)s",
                         datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
 

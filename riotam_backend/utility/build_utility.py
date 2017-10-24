@@ -201,10 +201,12 @@ def execute_makefile(app_build_dir, board, app_name):
 
 
 def get_bindirbase(app_build_dir):
-    return os.path.join(app_build_dir, "bin")
+    return os.path.abspath(os.path.join(app_build_dir, "bin"))
 
 
 def get_bindir(app_build_dir, board):
+
+    app_build_dir = os.path.abspath(app_build_dir)
 
     bindirbase = get_bindirbase(app_build_dir)
     bindir = os.path.join(bindirbase, board)

@@ -80,13 +80,12 @@ def execute_build((board, application)):
     """
     start_time = datetime.now().replace(microsecond=0)
 
-    script = "build_example.py"
-    if USING_CACHE:
-        script = "build_example_cached.py"
-
-    cmd = ["python", script,
+    cmd = ["python", "build_example.py",
            "--application", application,
            "--board", board]
+
+    if USING_CACHE:
+        cmd.append("--caching")
 
     process = Popen(cmd, stdout=PIPE, stderr=STDOUT, cwd=os.path.join(PROJECT_ROOT_DIR, "riotam_backend"))
     output = process.communicate()[0]
@@ -95,9 +94,6 @@ def execute_build((board, application)):
     delta = end_time - start_time
 
     build_result = ast.literal_eval(output)
-
-    if USING_CACHE and build_result["extra"] is not None:
-        print(build_result["extra"])
 
     failed = not build_result["success"]
 
