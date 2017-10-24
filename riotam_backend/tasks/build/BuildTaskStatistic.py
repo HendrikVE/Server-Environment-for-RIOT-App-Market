@@ -38,7 +38,7 @@ def average_timedelta(deltas):
 
     Returns
     -------
-    int
+    timedelta
         Average timedelta
 
     """

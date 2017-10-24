@@ -16,10 +16,11 @@ CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, ".."))
 sys.path.append(PROJECT_ROOT_DIR)
 
-from riotam_backend.utility import build_utility as b_util
-from riotam_backend.utility import application_info_utility as a_util
-from riotam_backend.common.MyDatabase import MyDatabase
-from riotam_backend.common.ModuleCache import ModuleCache
+from config import config
+from utility import build_utility as b_util
+from utility import application_info_utility as a_util
+from common.MyDatabase import MyDatabase
+from common.ModuleCache import ModuleCache
 
 build_result = {
     "cmd_output": "",
@@ -29,7 +30,7 @@ build_result = {
     "success": False
 }
 
-LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build_example_log.txt")
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build_example.log")
 LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
 
 db = MyDatabase()
@@ -67,13 +68,13 @@ def main(argv):
 
     build_result["application_name"] = app_name
 
-    app_path = os.path.join(PROJECT_ROOT_DIR, fetch_application_path(application_id))
+    app_path = os.path.join(PROJECT_ROOT_DIR, a_util.get_application_path(db, application_id))
     copytree(app_path, app_build_dir)
 
     used_modules = None
     if using_cache:
 
-        used_modules = a_util.get_used_modules(db, application_id)
+        used_modules = a_util.get_defined_modules(db, application_id)
 
         app_build_dir_abs_path = os.path.abspath(app_build_dir)
         bindir = b_util.get_bindir(app_build_dir_abs_path, board)
@@ -83,12 +84,11 @@ def main(argv):
 
             if cached_module_path is not None:
 
-                build_result["extra"] = "using cache entry from %s" % cached_module_path
-
                 dest_path_module = os.path.join(bindir, module)
 
                 try:
                     rmtree(dest_path_module)
+
                 except:
                     pass
 
@@ -182,35 +182,9 @@ def replace_application_name(path, application_name):
                 makefile.write(line)
 
 
-def fetch_application_path(id):
-    """
-    Fetch path of application from database
-
-    Parameters
-    ----------
-    id: int
-        ID of the application
-
-    Returns
-    -------
-    string
-        Path of the application, None if not found
-
-    """
-    db.query("SELECT path FROM applications WHERE id=%s", (id,))
-    applications = db.fetchall()
-
-    if len(applications) != 1:
-        logging.error("error in database: len(applications != 1)")
-        return None
-
-    else:
-        return applications[0]["path"]
-
-
 if __name__ == "__main__":
 
-    logging.basicConfig(filename=LOGFILE, format="%(asctime)s [%(levelname)s]: %(message)s",
+    logging.basicConfig(filename=LOGFILE, format=config.LOGGING_FORMAT,
                         datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
 
     try:

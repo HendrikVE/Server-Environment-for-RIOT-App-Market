@@ -16,8 +16,9 @@ CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, ".."))
 sys.path.append(PROJECT_ROOT_DIR)
 
-from riotam_backend.utility import build_utility as bu
-from riotam_backend.common.MyDatabase import MyDatabase
+from config import config
+from utility import build_utility as bu
+from common.MyDatabase import MyDatabase
 
 build_result = {
     "cmd_output": "",
@@ -27,7 +28,7 @@ build_result = {
     "success": False
 }
 
-LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build_example_log.txt")
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build_example.log")
 LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
 
 db = MyDatabase()
@@ -195,7 +196,7 @@ def write_makefile(board, modules, application_name, path):
 
 if __name__ == "__main__":
     
-    logging.basicConfig(filename=LOGFILE, format="%(asctime)s [%(levelname)s]: %(message)s",
+    logging.basicConfig(filename=LOGFILE, format=config.LOGGING_FORMAT,
                         datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
 
     try:

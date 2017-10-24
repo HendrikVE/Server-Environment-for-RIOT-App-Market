@@ -19,10 +19,11 @@ CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, "..", "..", ".."))
 sys.path.append(PROJECT_ROOT_DIR)
 
+from riotam_backend.config import config
 from BuildTaskStatistic import BuildTaskStatistic
 from riotam_backend.common.MyDatabase import MyDatabase
 
-LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "prepare_all_log.txt")
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "prepare_all.log")
 USING_CACHE = True
 
 db = MyDatabase()
@@ -34,7 +35,7 @@ def main():
     thread_count = multiprocessing.cpu_count()
 
     print("preparing build tasks...")
-    tasks = get_build_tasks()[:2]
+    tasks = get_build_tasks()[0:12]
 
     print("got %s tasks" % len(tasks))
 
@@ -166,7 +167,7 @@ def fetch_applications():
 
 if __name__ == "__main__":
 
-    logging.basicConfig(filename=LOGFILE, format="%(asctime)s [%(levelname)s]: %(message)s",
+    logging.basicConfig(filename=LOGFILE, format=config.LOGGING_FORMAT,
                         datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
 
     try:

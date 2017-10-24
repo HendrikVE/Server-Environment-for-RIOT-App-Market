@@ -7,10 +7,12 @@ import logging
 import os
 from subprocess import Popen, PIPE, STDOUT
 
+from config import config
+
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, ".."))
 
-LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "push_webhook_handler_log.txt")
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "push_webhook_handler.log")
 
 
 def main():
@@ -66,7 +68,7 @@ def execute_command(cmd, cwd=None):
 
 if __name__ == "__main__":
 
-    logging.basicConfig(filename=LOGFILE, format="%(asctime)s [%(levelname)s]: %(message)s",
+    logging.basicConfig(filename=LOGFILE, format=config.LOGGING_FORMAT,
                         datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
 
     try:
