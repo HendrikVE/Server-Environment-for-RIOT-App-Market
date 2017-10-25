@@ -32,8 +32,6 @@ stat = BuildTaskStatistic()
 
 def main():
 
-    thread_count = multiprocessing.cpu_count()
-
     print("preparing build tasks...")
     tasks = get_build_tasks()[0:12]
 
@@ -44,29 +42,24 @@ def main():
     print("using cache: %s" % str(USING_CACHE))
 
     print("starting worker threads...")
-    execute_tasks(thread_count, tasks)
+    execute_tasks(tasks)
 
     stat.stop()
     print(stat)
 
 
-def execute_tasks(thread_count, tasks):
+def execute_tasks(tasks):
     """
     Execute given tasks by threadpool
 
     Parameters
     ----------
-    thread_count: int
-        Amount of threads to be used within threadpool
-
     tasks: array_like
         List of (board, applications) tuples
 
     """
-    pool = ThreadPool(thread_count)
-    results = pool.map(execute_build, tasks)
-    pool.close()
-    pool.join()
+    for task in tasks:
+        execute_build(task)
 
 
 def execute_build((board, application)):

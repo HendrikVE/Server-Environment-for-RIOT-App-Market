@@ -7,6 +7,8 @@ import logging
 import os
 from subprocess import Popen, PIPE, STDOUT
 
+from shutil import rmtree
+
 from config import config
 
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -18,6 +20,14 @@ LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "push_webhook_handler.log")
 def main():
     """
     Routine to update backend repository. Gets called by push_webhook_handler.py inside frontend"""
+
+    """DELETE CACHE"""
+    cache_dir = config.CACHE_DIR
+    try:
+        rmtree(cache_dir)
+
+    except Exception:
+        pass
 
     """UPDATE GIT REPOSITORY"""
     output = execute_command(["git", "-C", PROJECT_ROOT_DIR, "pull"])

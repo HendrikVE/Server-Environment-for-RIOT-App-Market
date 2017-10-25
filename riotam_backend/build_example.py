@@ -35,7 +35,7 @@ LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
 
 db = MyDatabase()
 
-cache_dir = os.path.join(PROJECT_ROOT_DIR, ".cache")
+cache_dir = os.path.join(PROJECT_ROOT_DIR, config.CACHE_DIR)
 cache = ModuleCache(cache_dir)
 
 

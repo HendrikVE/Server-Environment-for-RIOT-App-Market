@@ -35,21 +35,21 @@ def update_modules():
     for i in range(len(config.module_directories)):
 
         module_directory = config.module_directories[i]
-        path = os.path.join(PROJECT_ROOT_DIR, config.path_root, module_directory)
+        module_path = os.path.join(PROJECT_ROOT_DIR, config.path_root, module_directory)
 
-        for item in os.listdir(path):
-            if not os.path.isfile(os.path.join(path, item)):
+        for name in os.listdir(module_path):
+            if not os.path.isfile(os.path.join(module_path, name)):
 
                 # ignoring include directories
-                if item == "include":
+                if name == "include":
                     continue
                     
-                description = get_description(path, item)
+                description = get_description(module_path, name)
                     
-                module_name = get_name(os.path.join(path, item), item)
+                module_name = get_name(os.path.join(module_path, name), name)
                 
                 sql = "INSERT INTO modules (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
-                db.query(sql, (module_name, os.path.join(path, item), description, module_directory))
+                db.query(sql, (module_name, os.path.join(module_path, name), description, module_directory))
 
     db.commit()
 
@@ -84,26 +84,26 @@ def update_applications():
     for i in range(len(config.application_directories)):
 
         application_directory = config.application_directories[i]
-        path = os.path.join(PROJECT_ROOT_DIR, config.path_root, application_directory)
+        application_path = os.path.join(PROJECT_ROOT_DIR, config.path_root, application_directory)
 
-        for item in os.listdir(path):
-            if not os.path.isfile(os.path.join(path, item)):
+        for name in os.listdir(application_path):
+            if not os.path.isfile(os.path.join(application_path, name)):
 
                 # ignoring include directories
-                if item == "include":
+                if name == "include":
                     continue
                     
-                description = get_description(path, item)
+                description = get_description(application_path, name)
                     
-                application_name = get_name(os.path.join(path, item), item)
+                application_name = get_name(os.path.join(application_path, name), name)
                 
                 sql = "INSERT INTO applications (name, path, description, group_identifier) VALUES (%s, %s, %s, %s);"
-                db.query(sql, (application_name, os.path.join(path, item), description, application_directory))
+                db.query(sql, (application_name, os.path.join(application_path, name), description, application_directory))
 
     db.commit()
 
 
-def get_description(path, item):
+def get_description(path, name):
     """
     Collection of rules executing inner function to search for a description
 
@@ -111,8 +111,8 @@ def get_description(path, item):
     ----------
     path: string
         Path in which the search is done
-    item: string
-        Name of the item
+    name: string
+        Name of a directory
 
     Returns
     -------
@@ -165,19 +165,19 @@ def get_description(path, item):
         return description
         
     # try rule 1
-    description = get_description_helper(os.path.join(path, "include", item +".h"))
+    description = get_description_helper(os.path.join(path, "include", name + ".h"))
         
     # try rule 2
     if description is None:
-        description = get_description_helper(os.path.join(path, item, "doc.txt"))
+        description = get_description_helper(os.path.join(path, name, "doc.txt"))
 
     # try rule 3
     if description is None:
-        description = get_description_helper(os.path.join(path, item, item + ".c"))
+        description = get_description_helper(os.path.join(path, name, name + ".c"))
 
     # try rule 4
     if description is None:
-        description = get_description_helper(os.path.join(path, item, "main.c"))
+        description = get_description_helper(os.path.join(path, name, "main.c"))
         
     return description
 

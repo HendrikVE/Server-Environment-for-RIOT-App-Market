@@ -191,7 +191,9 @@ def execute_makefile(app_build_dir, board, app_name):
     bindir = get_bindir(app_build_dir_abs_path, board)
     elffile = app_elffile_path(bindir, app_name)
 
-    cmd = ["make", "--directory=%s" % app_build_dir,
+    cmd = ["make",
+           "-C", app_build_dir, # within app_build_dir
+           "-j" # use more threads
            "BOARD=%s" % board,
            "BINDIRBASE=%s" % bindirbase,
            "ELFFILE=%s" % elffile]
