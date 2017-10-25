@@ -192,7 +192,7 @@ def execute_makefile(app_build_dir, board, app_name):
     elffile = app_elffile_path(bindir, app_name)
 
     cmd = ["make",
-           "-j",                # use more threads
+           # "-j",              # use more threads
            "-C", app_build_dir, # work within app_build_dir
            "BOARD=%s" % board,
            "BINDIRBASE=%s" % bindirbase,

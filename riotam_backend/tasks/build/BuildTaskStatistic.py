@@ -3,6 +3,7 @@
 
 import textwrap
 from datetime import datetime, timedelta
+import thread
 
 
 def timedelta_to_formatted_string(delta):
@@ -75,6 +76,7 @@ class BuildTaskStatistic(object):
 
     _active = False
     _finished = False
+    _lock = thread.allocate_lock()
 
     _average_execute_time = None
     _execute_time_failed_builds = None
@@ -114,6 +116,7 @@ class BuildTaskStatistic(object):
             Set true if task failed
 
         """
+        self._lock.acquire()
 
         self._build_count += 1
         if failed:
@@ -125,6 +128,8 @@ class BuildTaskStatistic(object):
             self._current_min_execute_time = min(self._current_min_execute_time, execute_time)
             self._current_max_execute_time = max(self._current_max_execute_time, execute_time)
             self._build_times.append(execute_time)
+
+        self._lock.release()
 
     def _update_variables(self):
         """
