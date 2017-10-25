@@ -41,7 +41,7 @@ def main():
 
     print("using cache: %s" % str(USING_CACHE))
 
-    print("starting worker threads...")
+    print("starting builds...")
     execute_tasks(tasks)
 
     stat.stop()
