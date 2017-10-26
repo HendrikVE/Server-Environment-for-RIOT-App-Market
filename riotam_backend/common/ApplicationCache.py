@@ -38,17 +38,17 @@ class ApplicationCache(object):
         else:
             return None
 
-    def cache(self, path, board, name):
+    def cache(self, path, board, app_name, file_name):
 
         create_directories(self._cache_dir)
 
         # only store if not in cache already
-        if self.get_entry(board, name) is None:
+        if self.get_entry(board, app_name, file_name) is None:
 
-            dest_in_cache = os.path.join(self._cache_dir, board, name)
+            dest_in_cache = os.path.join(self._cache_dir, board, app_name)
 
             create_directories(dest_in_cache)
-            copyfile(path, os.path.join(dest_in_cache, os.path.basename(path)))
+            copyfile(path, os.path.join(dest_in_cache, file_name))
 
             # show that cached application/module is now ready to use
             ready_file_path = os.path.join(dest_in_cache, ".ready_to_use")
