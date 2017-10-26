@@ -1,7 +1,7 @@
 *.pyc
 
 .idea/
-.cache/
+.*cache/
 
 RIOT_stripped/
 RIOT_stripped.zip
