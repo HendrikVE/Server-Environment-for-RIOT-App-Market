@@ -12,7 +12,7 @@ from shutil import rmtree
 from config import config
 
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
-PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, ".."))
+PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, os.pardir))
 
 LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "push_webhook_handler.log")
 
@@ -22,7 +22,7 @@ def main():
     Routine to update backend repository. Gets called by push_webhook_handler.py inside frontend"""
 
     """DELETE CACHE"""
-    cache_dir = config.CACHE_DIR
+    cache_dir = config.MODULE_CACHE_DIR
     try:
         rmtree(cache_dir)
 

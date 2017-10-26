@@ -24,4 +24,5 @@ LOGGING_FORMAT = "[%(levelname)s]: %(asctime)s\n"\
                  + "in %(filename)s in %(funcName)s on line %(lineno)d\n"\
                  + "%(message)s\n"
 
-CACHE_DIR = ".cache"
+MODULE_CACHE_DIR = ".module_cache"
+APPLICATION_CACHE_DIR = ".application_cache"

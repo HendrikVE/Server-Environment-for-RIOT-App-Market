@@ -210,10 +210,10 @@ def get_bindir(app_build_dir, board):
 
     app_build_dir = os.path.abspath(app_build_dir)
 
-    bindirbase = get_bindirbase(app_build_dir)
-    bindir = os.path.join(bindirbase, board)
+    bin_dir_base = get_bindirbase(app_build_dir)
+    bin_dir = os.path.join(bin_dir_base, board)
 
-    return bindir
+    return bin_dir
 
 
 def _prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):

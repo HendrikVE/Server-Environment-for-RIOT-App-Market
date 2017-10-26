@@ -13,7 +13,7 @@ from shutil import copytree, rmtree, copyfile
 #   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
 #   which could be forget
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
-PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, ".."))
+PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, os.pardir))
 sys.path.append(PROJECT_ROOT_DIR)
 
 from config import config
@@ -21,6 +21,8 @@ from utility import build_utility as b_util
 from utility import application_info_utility as a_util
 from common.MyDatabase import MyDatabase
 from common.ModuleCache import ModuleCache
+from common.ApplicationCache import ApplicationCache
+from common.common import create_directories
 
 build_result = {
     "cmd_output": "",
@@ -35,8 +37,9 @@ LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
 
 db = MyDatabase()
 
-cache_dir = os.path.join(PROJECT_ROOT_DIR, config.CACHE_DIR)
-cache = ModuleCache(cache_dir)
+
+MODULE_CACHE_DIR = os.path.join(PROJECT_ROOT_DIR, config.MODULE_CACHE_DIR)
+APPLICATION_CACHE_DIR = os.path.join(PROJECT_ROOT_DIR, config.APPLICATION_CACHE_DIR)
 
 
 def main(argv):
@@ -53,6 +56,11 @@ def main(argv):
     board = args.board
     application_id = args.application
     using_cache = args.caching
+
+    module_cache = ModuleCache(MODULE_CACHE_DIR)
+    application_cache = ApplicationCache(APPLICATION_CACHE_DIR)
+
+    source_app_name = a_util.get_application_name(db, application_id)
 
     build_result["board"] = board
 
@@ -71,32 +79,42 @@ def main(argv):
     app_path = os.path.join(PROJECT_ROOT_DIR, a_util.get_application_path(db, application_id))
     copytree(app_path, app_build_dir)
 
+    app_build_dir_abs_path = os.path.abspath(app_build_dir)
+    bin_dir = b_util.get_bindir(app_build_dir_abs_path, board)
+
     used_modules = None
+    cached_binaries = False
     if using_cache:
 
-        used_modules = a_util.get_defined_modules(db, application_id)
+        cached_elffile_path = application_cache.get_entry(board, source_app_name, "%s.elf" % source_app_name)
+        cached_hexfile_path = application_cache.get_entry(board, source_app_name, "%s.hex" % source_app_name)
 
-        app_build_dir_abs_path = os.path.abspath(app_build_dir)
-        bindir = b_util.get_bindir(app_build_dir_abs_path, board)
+        if (cached_elffile_path is not None) or (cached_hexfile_path is not None):
 
-        for module in used_modules:
-            cached_module_path = cache.get_cache_entry(board, module)
+            cached_binaries = True
 
-            if cached_module_path is not None:
+            create_directories(bin_dir)
 
-                dest_path_module = os.path.join(bindir, module)
+            # copy files from cache in to bin_dir.
+            # Need to rename it because further steps expect given name based on ticketID
+            if cached_elffile_path is not None:
+                logging.debug("using cached elffile from %s" % cached_elffile_path)
+                copyfile(cached_elffile_path, os.path.join(bin_dir, "%s.elf" % app_name))
 
-                try:
-                    rmtree(dest_path_module)
+            if cached_hexfile_path is not None:
+                logging.debug("using cached hexfile from %s" % cached_hexfile_path)
+                copyfile(cached_hexfile_path, os.path.join(bin_dir, "%s.hex" % app_name))
 
-                except:
-                    pass
+        # check for cached modules (only, if no binaries were found)
+        if not cached_binaries:
+            logging.debug("nothing found in cache for %s" % source_app_name)
+            used_modules = a_util.get_defined_modules(db, application_id)
+            prepare_modules_from_cache(module_cache, bin_dir, board, used_modules)
 
-                copytree(cached_module_path, dest_path_module)
-
-    replace_application_name(os.path.join(app_build_dir, "Makefile"), app_name)
-
-    build_result["cmd_output"] += b_util.execute_makefile(app_build_dir, board, app_name)
+    if not cached_binaries:
+        # if nothing found in cache, just build it
+        replace_application_name(os.path.join(app_build_dir, "Makefile"), app_name)
+        build_result["cmd_output"] += b_util.execute_makefile(app_build_dir, board, app_name)
 
     try:
         stripped_repo_path = b_util.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
@@ -111,17 +129,20 @@ def main(argv):
 
         build_result["success"] = True
 
-        if using_cache:
+        if using_cache and not cached_binaries:
+
+            app_build_dir_abs_path = os.path.abspath(app_build_dir)
+            bin_dir = b_util.get_bindir(app_build_dir_abs_path, board)
+
             # cache modules of successful tasks
-            for module in used_modules:
-                cache.cache_module(app_build_dir, board, module)
+            cache_modules(module_cache, bin_dir, board, used_modules)
+
+            # cache application
+            cache_application(application_cache, bin_dir, temp_dir, board, app_name, source_app_name)
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
         build_result["cmd_output"] += "something went wrong on server side"
-
-    # using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
-    # build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
 
     # delete temporary directories after finished build
     try:
@@ -153,6 +174,61 @@ def init_argparse():
                         help="wether to use cache or not")
 
     return parser
+
+
+def prepare_modules_from_cache(cache, bin_dir, board, used_modules):
+
+    for module in used_modules:
+        cached_module_path = cache.get_entry(board, module)
+
+        if cached_module_path is not None:
+
+            dest_path_module = os.path.join(bin_dir, module)
+
+            try:
+                rmtree(dest_path_module)
+
+            except:
+                pass
+
+            copytree(cached_module_path, dest_path_module)
+
+
+def cache_modules(cache, bin_dir, board, used_modules):
+
+    for module in used_modules:
+        module_path = os.path.join(bin_dir, module)
+        cache.cache(module_path, board, module)
+
+
+def cache_application(cache, bin_dir, temp_dir, board, app_name, source_app_name):
+
+    # get compiled binaries
+    elffile_path = b_util.app_elffile_path(bin_dir, app_name)
+    hexfile_path = b_util.app_hexfile_path(bin_dir, app_name)
+
+    # set new name for the file which should be cached with this name
+    cached_elffile_name = "%s.elf" % source_app_name
+    cached_hexfile_name = "%s.hex" % source_app_name
+
+    # set path to files to be cached
+    path_elffile_to_cache = os.path.join(temp_dir, cached_elffile_name)
+    path_hexfile_to_cache = os.path.join(temp_dir, cached_hexfile_name)
+
+    # copy files with new names to temp_dir
+    try:
+        copyfile(elffile_path, path_elffile_to_cache)
+    except Exception as e:
+        logging.debug(str(e))
+
+    try:
+        copyfile(hexfile_path, path_hexfile_to_cache)
+    except Exception as e:
+        logging.debug(str(e))
+
+    # reference to renamed copies for caching purpose
+    cache.cache(path_elffile_to_cache, board, source_app_name)
+    cache.cache(path_hexfile_to_cache, board, source_app_name)
 
 
 def replace_application_name(path, application_name):

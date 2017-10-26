@@ -16,7 +16,7 @@ from datetime import datetime
 #   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
 #   which could be forget
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
-PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, "..", "..", ".."))
+PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, os.pardir, os.pardir, os.pardir))
 sys.path.append(PROJECT_ROOT_DIR)
 
 from riotam_backend.config import config
@@ -35,7 +35,7 @@ def main():
     thread_count = multiprocessing.cpu_count()
 
     print("preparing build tasks...")
-    tasks = get_build_tasks()[0:12]
+    tasks = get_build_tasks()[0:4]
 
     print("got %s tasks" % len(tasks))
 

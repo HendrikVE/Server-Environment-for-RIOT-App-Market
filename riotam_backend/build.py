@@ -13,7 +13,7 @@ from shutil import rmtree
 #   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
 #   which could be forget
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
-PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, ".."))
+PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, os.pardir))
 sys.path.append(PROJECT_ROOT_DIR)
 
 from config import config
@@ -88,9 +88,6 @@ def main(argv):
     except Exception as e:
         logging.error(str(e), exc_info=True)
         build_result["cmd_output"] += "something went wrong on server side"
-
-    # using iframe for automatic start of download, https://stackoverflow.com/questions/14886843/automatic-download-launch
-    # build_result["cmd_output"] += "<div style=""display:none;""><iframe id=""frmDld"" src=""timer_periodic_wakeup.elf""></iframe></div>"
 
     # delete temporary directories after finished build
     try:

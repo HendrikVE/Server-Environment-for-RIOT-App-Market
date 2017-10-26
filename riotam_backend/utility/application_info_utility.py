@@ -57,3 +57,16 @@ def get_application_path(db, app_id):
 
     else:
         return applications[0]["path"]
+
+
+def get_application_name(db, app_id):
+
+    db.query("SELECT name FROM applications WHERE id=%s", (app_id,))
+    applications = db.fetchall()
+
+    if len(applications) != 1:
+        logging.error("error in database: len(applications != 1)")
+        return None
+
+    else:
+        return applications[0]["name"]

@@ -15,20 +15,25 @@ sys.path.append(PROJECT_ROOT_DIR)
 from common import create_directories
 
 
-class ModuleCache(object):
+class ApplicationCache(object):
 
     _cache_dir = None
 
     def __init__(self, cache_dir):
         self._cache_dir = cache_dir
 
-    def get_entry(self, board, path):
+    def get_entry(self, board, app_name, file_name):
 
-        cache_path = os.path.join(self._cache_dir, board, path)
+        cache_path = os.path.join(self._cache_dir, board, app_name)
+
+        result_file_path = os.path.join(cache_path, file_name)
         ready_to_use_file = os.path.join(cache_path, ".ready_to_use")
 
+        if not os.path.isfile(result_file_path):
+            return None
+
         if os.path.isfile(ready_to_use_file):
-            return cache_path
+            return result_file_path
 
         else:
             return None
@@ -42,7 +47,8 @@ class ModuleCache(object):
 
             dest_in_cache = os.path.join(self._cache_dir, board, name)
 
-            copytree(path, dest_in_cache)
+            create_directories(dest_in_cache)
+            copyfile(path, os.path.join(dest_in_cache, os.path.basename(path)))
 
             # show that cached application/module is now ready to use
             ready_file_path = os.path.join(dest_in_cache, ".ready_to_use")
