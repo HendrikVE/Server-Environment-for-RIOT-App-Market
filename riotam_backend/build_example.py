@@ -227,8 +227,8 @@ def cache_application(cache, bin_dir, temp_dir, board, app_name, source_app_name
         logging.debug(str(e))
 
     # reference to renamed copies for caching purpose
-    cache.cache(path_elffile_to_cache, board, source_app_name)
-    cache.cache(path_hexfile_to_cache, board, source_app_name)
+    cache.cache(path_elffile_to_cache, board, source_app_name, os.path.basename(elffile_path))
+    cache.cache(path_hexfile_to_cache, board, source_app_name, os.path.basename(hexfile_path))
 
 
 def replace_application_name(path, application_name):
