@@ -51,8 +51,8 @@ def average_timedelta(deltas):
 
     """
     if len(deltas) == 0:
-        return 0
-    
+        return timedelta(0)
+
     # start sum with "empty" timedelta instead of 0 as integer
     time_sum = sum(deltas, timedelta(0))
 
