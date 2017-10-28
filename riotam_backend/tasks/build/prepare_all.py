@@ -16,7 +16,7 @@ import logging
 import multiprocessing
 import os
 import sys
-from multiprocessing.pool import ThreadPool
+from multiprocessing import Pool
 from subprocess import PIPE, STDOUT, Popen
 from datetime import datetime
 
@@ -40,7 +40,7 @@ stat = BuildTaskStatistic()
 
 def main():
 
-    thread_count = multiprocessing.cpu_count()
+    pool_size = multiprocessing.cpu_count()
 
     print("preparing build tasks...")
     tasks = get_build_tasks()[0:4]
@@ -51,27 +51,29 @@ def main():
 
     print("using cache: %s" % str(USING_CACHE))
 
-    print("starting %d worker threads..." % thread_count)
-    execute_tasks(thread_count, tasks)
+    print("starting %d worker threads..." % pool_size)
+    execute_tasks(pool_size, tasks)
 
     stat.stop()
     print(stat)
 
 
-def execute_tasks(thread_count, tasks):
+def execute_tasks(pool_size, tasks):
     """
     Execute given tasks by threadpool
 
     Parameters
     ----------
-    thread_count: int
-        Amount of threads to be used within threadpool
+    pool_size: int
+        Amount of processes to be used within the pool
     tasks: array_like
         List of (board, applications) tuples
 
     """
-    pool = ThreadPool(thread_count)
-    results = pool.map(execute_build, tasks)
+    pool = Pool(pool_size)
+    pool.map(execute_build, tasks)
+
+    # waiting until every process has finished his work
     pool.close()
     pool.join()
 
