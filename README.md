@@ -19,3 +19,9 @@
 6. go to setup/ and run 'python db_setup.py'
 7. update the database with running 'python db_update.py'
 8. to create or update a stripped version of the RIOT repository run 'python strip_riot_repo.py'
+
+## LICENSE
+* The project is licensed under the GNU Lesser General Public License
+  (LGPL) version 2.1 as published by the Free Software Foundation.
+
+All code files contain licensing information.
