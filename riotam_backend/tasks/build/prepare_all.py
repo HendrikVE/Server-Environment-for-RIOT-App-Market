@@ -92,7 +92,8 @@ def build_worker(task_list):
 
         cmd = ["python", "build_example.py",
                "--application", application,
-               "--board", board]
+               "--board", board,
+               "--prefetching"]
 
         if USING_CACHE:
             cmd.append("--caching")
