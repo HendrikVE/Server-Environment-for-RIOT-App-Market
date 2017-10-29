@@ -74,18 +74,16 @@ def build_worker(task_list):
     """
     while True:
 
-        task_list_lock.acquire()
+        task = None
 
+        task_list_lock.acquire()
         if len(task_list) > 0:
             task = task_list.pop(0)
-
-        else:
-            # no more tasks left in queue, finish this worker
-            print("I'll kill myself")
-            task_list_lock.release()
-            return
-
         task_list_lock.release()
+
+        if task is None:
+            # no more tasks left in queue, finish this worker
+            return
 
         board = task[0]
         application = task[1]
@@ -139,7 +137,7 @@ def get_tasks():
         for board in get_supported_boards(app_dir):
             task_list.append((board, str(application["id"])))
 
-    return task_list
+    return task_list[:4]
 
 
 def get_supported_boards(app_dir):

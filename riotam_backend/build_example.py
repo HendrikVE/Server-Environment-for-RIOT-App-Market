@@ -43,11 +43,10 @@ build_result = {
 LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build_example.log")
 LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
 
-db = MyDatabase()
-
-
 MODULE_CACHE_DIR = os.path.join(PROJECT_ROOT_DIR, config.MODULE_CACHE_DIR)
 APPLICATION_CACHE_DIR = os.path.join(PROJECT_ROOT_DIR, config.APPLICATION_CACHE_DIR)
+
+db = MyDatabase()
 
 
 def main(argv):
@@ -64,6 +63,7 @@ def main(argv):
     board = args.board
     application_id = args.application
     using_cache = args.caching
+    prefetching = args.prefetching
 
     module_cache = ModuleCache(MODULE_CACHE_DIR)
     application_cache = ApplicationCache(APPLICATION_CACHE_DIR)
@@ -125,17 +125,19 @@ def main(argv):
         build_result["cmd_output"] += b_util.execute_makefile(app_build_dir, board, app_name)
 
     try:
-        stripped_repo_path = b_util.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
 
-        archive_path = os.path.join(temp_dir, "RIOT_stripped.tar")
-        b_util.zip_repo(stripped_repo_path, archive_path)
+        if not prefetching:
+            stripped_repo_path = b_util.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
 
-        archive_extension = "tar"
+            archive_path = os.path.join(temp_dir, "RIOT_stripped.tar")
+            b_util.zip_repo(stripped_repo_path, archive_path)
 
-        build_result["output_archive_extension"] = archive_extension
-        build_result["output_archive"] = b_util.file_as_base64(archive_path)
+            archive_extension = "tar"
 
-        build_result["success"] = True
+            build_result["output_archive_extension"] = archive_extension
+            build_result["output_archive"] = b_util.file_as_base64(archive_path)
+
+            build_result["success"] = True
 
         if using_cache and not cached_binaries:
 
@@ -180,6 +182,11 @@ def init_argparse():
                         dest="caching", action="store_true", default=False,
                         required=False,
                         help="wether to use cache or not")
+
+    parser.add_argument("--prefetching",
+                        dest="prefetching", action="store_true", default=False,
+                        required=False,
+                        help="if flag is set, binaries are just generated. Further steps are ignored")
 
     return parser
 
