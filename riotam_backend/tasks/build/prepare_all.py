@@ -138,7 +138,7 @@ def get_tasks():
         for board in get_supported_boards(app_dir):
             task_list.append((board, str(application["id"])))
 
-    return task_list[:4]
+    return task_list
 
 
 def get_supported_boards(app_dir):

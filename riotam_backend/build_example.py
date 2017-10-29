@@ -81,6 +81,7 @@ def main(argv):
     app_build_dir = os.path.join(app_build_parent_dir, app_name)
 
     temp_dir = b_util.get_temporary_directory(PROJECT_ROOT_DIR, ticket_id)
+    create_directories(temp_dir)
 
     build_result["application_name"] = app_name
 
@@ -106,16 +107,13 @@ def main(argv):
             # copy files from cache in to bin_dir.
             # Need to rename it because further steps expect given name based on ticketID
             if cached_elffile_path is not None:
-                logging.debug("using cached elffile from %s" % cached_elffile_path)
                 copyfile(cached_elffile_path, os.path.join(bin_dir, "%s.elf" % app_name))
 
             if cached_hexfile_path is not None:
-                logging.debug("using cached hexfile from %s" % cached_hexfile_path)
                 copyfile(cached_hexfile_path, os.path.join(bin_dir, "%s.hex" % app_name))
 
         # check for cached modules (only, if no binaries were found)
         if not cached_binaries:
-            logging.debug("nothing found in cache for %s" % source_app_name)
             used_modules = a_util.get_defined_modules(db, application_id)
             prepare_modules_from_cache(module_cache, bin_dir, board, used_modules)
 
@@ -137,7 +135,7 @@ def main(argv):
             build_result["output_archive_extension"] = archive_extension
             build_result["output_archive"] = b_util.file_as_base64(archive_path)
 
-            build_result["success"] = True
+        build_result["success"] = True
 
         if using_cache and not cached_binaries:
 
