@@ -37,46 +37,32 @@ USING_CACHE = True
 db = MyDatabase()
 stat = BuildTaskStatistic()
 
+task_list_lock = multiprocessing.Lock()
+
 
 def main():
 
     pool_size = multiprocessing.cpu_count()
 
     print("preparing build tasks...")
-    tasks = get_build_tasks()[0:4]
+    task_list = get_tasks()
 
-    print("got %s tasks" % len(tasks))
+    print("got %s tasks" % len(task_list))
 
     stat.start()
 
     print("using cache: %s" % str(USING_CACHE))
 
     print("starting %d workers..." % pool_size)
-    execute_tasks(pool_size, tasks)
+    pool = ThreadPool(pool_size, build_worker, (task_list,))
+    pool.close()
+    pool.join()
 
     stat.stop()
     print(stat)
 
 
-def execute_tasks(pool_size, tasks):
-    """
-    Execute given tasks by pool
-
-    Parameters
-    ----------
-    pool_size: int
-        Amount of workers to be used within the pool
-    tasks: array_like
-        List of (board, applications) tuples
-
-    """
-    pool = ThreadPool(pool_size)
-    pool.map(execute_build, tasks)
-    pool.close()
-    pool.join()
-
-
-def execute_build((board, application)):
+def build_worker(task_list):
     """
     Execute a given build task
 
@@ -86,36 +72,54 @@ def execute_build((board, application)):
         Tuple containing a board and an application
 
     """
-    start_time = datetime.now().replace(microsecond=0)
+    while True:
 
-    cmd = ["python", "build_example.py",
-           "--application", application,
-           "--board", board]
+        task_list_lock.acquire()
 
-    if USING_CACHE:
-        cmd.append("--caching")
+        if len(task_list) > 0:
+            task = task_list.pop(0)
 
-    process = Popen(cmd, stdout=PIPE, stderr=STDOUT, cwd=os.path.join(PROJECT_ROOT_DIR, "riotam_backend"))
-    output = process.communicate()[0]
+        else:
+            # no more tasks left in queue, finish this worker
+            print("I'll kill myself")
+            task_list_lock.release()
+            return
 
-    end_time = datetime.now().replace(microsecond=0)
-    delta = end_time - start_time
+        task_list_lock.release()
 
-    build_result = ast.literal_eval(output)
+        board = task[0]
+        application = task[1]
 
-    failed = not build_result["success"]
+        start_time = datetime.now().replace(microsecond=0)
 
-    stat.add_completed_task(delta, failed)
+        cmd = ["python", "build_example.py",
+               "--application", application,
+               "--board", board]
 
-    if failed:
-        print("[FAILED]: Build of {0} for {1}".format(application, board))
-        print(build_result["cmd_output"])
+        if USING_CACHE:
+            cmd.append("--caching")
 
-    else:
-        print("[DONE]:   Build of {0} for {1}".format(application, board))
+        process = Popen(cmd, stdout=PIPE, stderr=STDOUT, cwd=os.path.join(PROJECT_ROOT_DIR, "riotam_backend"))
+        output = process.communicate()[0]
+
+        end_time = datetime.now().replace(microsecond=0)
+        delta = end_time - start_time
+
+        build_result = ast.literal_eval(output)
+
+        failed = not build_result["success"]
+
+        stat.add_completed_task(delta, failed)
+
+        if failed:
+            print("[FAILED]: Build of {0} for {1}".format(application, board))
+            print(build_result["cmd_output"])
+
+        else:
+            print("[DONE]:   Build of {0} for {1}".format(application, board))
 
 
-def get_build_tasks():
+def get_tasks():
     """
     Generate build tasks
 
@@ -127,15 +131,15 @@ def get_build_tasks():
     """
     applications = fetch_applications()
 
-    build_tasks = []
+    task_list = []
     for application in applications:
 
         app_dir = application["path"]
 
         for board in get_supported_boards(app_dir):
-            build_tasks.append((board, str(application["id"])))
+            task_list.append((board, str(application["id"])))
 
-    return build_tasks
+    return task_list
 
 
 def get_supported_boards(app_dir):
