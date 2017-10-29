@@ -15,7 +15,7 @@ import argparse
 import logging
 import os
 import sys
-from shutil import rmtree
+from shutil import rmtree, copytree
 
 # append root of the python code tree to sys.apth so that imports are working
 #   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
@@ -25,8 +25,9 @@ PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, os.pardir))
 sys.path.append(PROJECT_ROOT_DIR)
 
 from config import config
-from utility import build_utility as bu
+from utility import build_utility as b_util
 from common.MyDatabase import MyDatabase
+from common.ModuleCache import ModuleCache
 
 build_result = {
     "cmd_output": "",
@@ -36,8 +37,10 @@ build_result = {
     "success": False
 }
 
-LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build_example.log")
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build.log")
 LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
+
+MODULE_CACHE_DIR = os.path.join(PROJECT_ROOT_DIR, config.MODULE_CACHE_DIR)
 
 db = MyDatabase()
 
@@ -56,42 +59,65 @@ def main(argv):
     board = args.board
     modules = args.modules
     main_file_content = args.main_file_content
+    using_cache = args.caching
+
+    module_cache = ModuleCache(MODULE_CACHE_DIR)
 
     build_result["board"] = board
 
     app_build_parent_dir = os.path.join(PROJECT_ROOT_DIR, "RIOT", "generated_by_riotam")
 
     # unique application directory name
-    ticket_id = bu.get_ticket_id()
+    ticket_id = b_util.get_ticket_id()
 
     app_name = "application%s" % ticket_id
     app_build_dir = os.path.join(app_build_parent_dir, app_name)
 
-    temp_dir = bu.get_temporary_directory(PROJECT_ROOT_DIR, ticket_id)
+    temp_dir = b_util.get_temporary_directory(PROJECT_ROOT_DIR, ticket_id)
 
     build_result["application_name"] = app_name
 
-    bu.create_directories(app_build_dir)
+    b_util.create_directories(app_build_dir)
 
     write_makefile(board, modules, app_name, app_build_dir)
 
     with open(os.path.join(app_build_dir, "main.c"), "w") as main_file:
         main_file.write(main_file_content)
 
-    build_result["cmd_output"] += bu.execute_makefile(app_build_dir, board, app_name)
+    used_modules = None
+    if using_cache:
+
+        app_build_dir_abs_path = os.path.abspath(app_build_dir)
+        bin_dir = b_util.get_bindir(app_build_dir_abs_path, board)
+
+        used_modules = []
+        for moduleID in modules:
+            used_modules.append(fetch_module_name(moduleID))
+
+        prepare_modules_from_cache(module_cache, bin_dir, board, used_modules)
+
+    build_result["cmd_output"] += b_util.execute_makefile(app_build_dir, board, app_name)
 
     try:
-        stripped_repo_path = bu.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
+        stripped_repo_path = b_util.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
 
         archive_path = os.path.join(temp_dir, "RIOT_stripped.tar")
-        bu.zip_repo(stripped_repo_path, archive_path)
+        b_util.zip_repo(stripped_repo_path, archive_path)
 
         archive_extension = "tar"
 
         build_result["output_archive_extension"] = archive_extension
-        build_result["output_archive"] = bu.file_as_base64(archive_path)
+        build_result["output_archive"] = b_util.file_as_base64(archive_path)
 
         build_result["success"] = True
+
+        if using_cache:
+
+            app_build_dir_abs_path = os.path.abspath(app_build_dir)
+            bin_dir = b_util.get_bindir(app_build_dir_abs_path, board)
+
+            # cache modules of successful tasks
+            cache_modules(module_cache, bin_dir, board, used_modules)
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
@@ -127,7 +153,37 @@ def init_argparse():
                         required=True,
                         help="main.c file for compiling custom RIOT OS")
 
+    parser.add_argument("--caching",
+                        dest="caching", action="store_true", default=False,
+                        required=False,
+                        help="wether to use cache or not")
+
     return parser
+
+
+def prepare_modules_from_cache(cache, bin_dir, board, used_modules):
+
+    for module in used_modules:
+        cached_module_path = cache.get_entry(board, module)
+
+        if cached_module_path is not None:
+
+            dest_path_module = os.path.join(bin_dir, module)
+
+            try:
+                rmtree(dest_path_module)
+
+            except:
+                pass
+
+            copytree(cached_module_path, dest_path_module)
+
+
+def cache_modules(cache, bin_dir, board, used_modules):
+
+    for module in used_modules:
+        module_path = os.path.join(bin_dir, module)
+        cache.cache(module_path, board, module)
 
 
 def fetch_module_name(id):
@@ -178,7 +234,6 @@ def write_makefile(board, modules, application_name, path):
         makefile.write("APPLICATION = " + application_name)
         makefile.write("\n\n")
 
-        # TODO: check, if board is in database
         makefile.write("BOARD ?= %s" % board)
         makefile.write("\n\n")
 
