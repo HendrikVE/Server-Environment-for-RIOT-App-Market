@@ -20,6 +20,9 @@
 7. update the database with running 'python db_update.py'
 8. to create or update a stripped version of the RIOT repository run 'python strip_riot_repo.py'
 
+### More Information
+Graphics are editable with [yEd](http://www.yworks.com/products/yed "http://www.yworks.com/products/yed")
+
 ## LICENSE
 * The project is licensed under the GNU Lesser General Public License
   (LGPL) version 2.1 as published by the Free Software Foundation.

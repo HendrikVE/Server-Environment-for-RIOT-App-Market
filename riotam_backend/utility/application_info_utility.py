@@ -37,23 +37,6 @@ def get_modules_from_makefile(path_to_makefile):
     return modules
 
 
-"""
-def get_used_modules(db, bindir):
-
-    directories = filter(os.path.isdir, os.listdir(bindir))
-
-    return [dir for dir in directories if is_cacheable_module(db, dir)]
-
-
-def is_cacheable_module(db, module_name):
-
-    db.query("SELECT * FROM modules where name='%s'" % module_name)
-    modules = db.fetchall()
-
-    return len(modules) == 1
-"""
-
-
 def get_application_path(db, app_id):
 
     db.query("SELECT path FROM applications WHERE id=%s", (app_id,))

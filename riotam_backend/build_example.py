@@ -69,6 +69,7 @@ def main(argv):
     application_cache = ApplicationCache(APPLICATION_CACHE_DIR)
 
     source_app_name = a_util.get_application_name(db, application_id)
+    source_app_dir_name = os.path.basename(a_util.get_application_path(db, application_id))
 
     build_result["board"] = board
 
@@ -95,8 +96,8 @@ def main(argv):
     cached_binaries = False
     if using_cache:
 
-        cached_elffile_path = application_cache.get_entry(board, source_app_name, "%s.elf" % source_app_name)
-        cached_hexfile_path = application_cache.get_entry(board, source_app_name, "%s.hex" % source_app_name)
+        cached_elffile_path = application_cache.get_entry(board, source_app_dir_name, "%s.elf" % source_app_name)
+        cached_hexfile_path = application_cache.get_entry(board, source_app_dir_name, "%s.hex" % source_app_name)
 
         if (cached_elffile_path is not None) or (cached_hexfile_path is not None):
 
@@ -135,7 +136,17 @@ def main(argv):
             build_result["output_archive_extension"] = archive_extension
             build_result["output_archive"] = b_util.file_as_base64(archive_path)
 
-        build_result["success"] = True
+            build_result["success"] = True
+
+        else:
+
+            # get compiled binaries
+            elffile_path = b_util.app_elffile_path(bin_dir, app_name)
+            hexfile_path = b_util.app_hexfile_path(bin_dir, app_name)
+
+            if os.path.isfile(elffile_path) and os.path.isfile(hexfile_path):
+                build_result["success"] = True
+
 
         if using_cache and not cached_binaries:
 
@@ -146,7 +157,7 @@ def main(argv):
             cache_modules(module_cache, bin_dir, board, used_modules)
 
             # cache application
-            cache_application(application_cache, bin_dir, temp_dir, board, app_name, source_app_name)
+            cache_application(application_cache, bin_dir, temp_dir, board, app_name, source_app_name, source_app_dir_name)
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
@@ -214,7 +225,7 @@ def cache_modules(cache, bin_dir, board, used_modules):
         cache.cache(module_path, board, module)
 
 
-def cache_application(cache, bin_dir, temp_dir, board, app_name, source_app_name):
+def cache_application(cache, bin_dir, temp_dir, board, app_name, source_app_name, source_app_dir_name):
 
     # get compiled binaries
     elffile_path = b_util.app_elffile_path(bin_dir, app_name)
@@ -231,17 +242,17 @@ def cache_application(cache, bin_dir, temp_dir, board, app_name, source_app_name
     # copy files with new names to temp_dir
     try:
         copyfile(elffile_path, path_elffile_to_cache)
+        # reference to renamed copy for caching purpose
+        cache.cache(path_elffile_to_cache, board, source_app_dir_name, cached_elffile_name)
     except Exception as e:
         logging.debug(str(e))
 
     try:
         copyfile(hexfile_path, path_hexfile_to_cache)
+        # reference to renamed copy for caching purpose
+        cache.cache(path_hexfile_to_cache, board, source_app_dir_name, cached_hexfile_name)
     except Exception as e:
         logging.debug(str(e))
-
-    # reference to renamed copies for caching purpose
-    cache.cache(path_elffile_to_cache, board, source_app_name, cached_elffile_name)
-    cache.cache(path_hexfile_to_cache, board, source_app_name, cached_hexfile_name)
 
 
 def replace_application_name(path, application_name):

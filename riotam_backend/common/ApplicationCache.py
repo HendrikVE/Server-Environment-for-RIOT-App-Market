@@ -8,7 +8,7 @@
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
 """
-
+import logging
 import os
 import sys
 from shutil import copytree, copyfile
@@ -30,33 +30,37 @@ class ApplicationCache(object):
     def __init__(self, cache_dir):
         self._cache_dir = cache_dir
 
-    def get_entry(self, board, app_name, file_name):
+    def get_entry(self, board, app_dir_name, file_name):
 
-        cache_path = os.path.join(self._cache_dir, board, app_name)
+        cache_path = os.path.join(self._cache_dir, board, app_dir_name)
 
         result_file_path = os.path.join(cache_path, file_name)
         ready_to_use_file = os.path.join(cache_path, ".ready_to_use")
 
         if not os.path.isfile(result_file_path):
+            logging.debug("cache MISS: %s" % result_file_path)
             return None
 
         if os.path.isfile(ready_to_use_file):
+            logging.debug("cache HIT: %s" % result_file_path)
             return result_file_path
 
         else:
+            logging.debug("cache FAIL: %s" % result_file_path)
             return None
 
-    def cache(self, path, board, app_name, file_name):
+    def cache(self, src_path, board, app_dir_name, file_name):
 
         create_directories(self._cache_dir)
 
         # only store if not in cache already
-        if self.get_entry(board, app_name, file_name) is None:
+        if self.get_entry(board, app_dir_name, file_name) is None:
 
-            dest_in_cache = os.path.join(self._cache_dir, board, app_name)
+            dest_in_cache = os.path.join(self._cache_dir, board, app_dir_name)
 
             create_directories(dest_in_cache)
-            copyfile(path, os.path.join(dest_in_cache, file_name))
+            logging.debug("CACHING: %s" % file_name)
+            copyfile(src_path, os.path.join(dest_in_cache, file_name))
 
             # show that cached application/module is now ready to use
             ready_file_path = os.path.join(dest_in_cache, ".ready_to_use")

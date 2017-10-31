@@ -89,7 +89,7 @@ def zip_repo(src_path, dest_path):
         tar.close()
 
     except Exception as e:
-        logging.error(str(e), exc_info=True)
+        raise e
 
 
 def file_as_base64(path):
@@ -269,14 +269,12 @@ def _prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
                 copyfile(operation[0], copy_dest_path)
 
             except Exception as e:
-                logging.debug(str(e))
+                raise e
 
         return dest_path
 
     except Exception as e:
-        logging.error(str(e), exc_info=True)
-
-    return None
+        return None
 
 
 def _rreplace(string, old, new, occurrences):
