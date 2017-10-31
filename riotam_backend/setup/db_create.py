@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 # -*- coding:utf-8 -*-
 
+from __future__ import division, print_function, unicode_literals
+
 """
  * Copyright (C) 2017 Hendrik van Essen
  *
@@ -12,8 +14,6 @@
 """Create backend database and repository.
 
 """
-
-from __future__ import division, print_function, unicode_literals
 
 import MySQLdb
 from getpass import getpass
