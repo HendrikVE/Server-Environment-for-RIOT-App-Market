@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 # -*- coding:utf-8 -*-
 
-from __future__ import division, print_function, unicode_literals
-
 """
  * Copyright (C) 2017 Hendrik van Essen
  *
@@ -11,16 +9,16 @@ from __future__ import division, print_function, unicode_literals
  * directory for more details.
 """
 
-"""Create backend database and repository.
-
-"""
+from __future__ import division, print_function, unicode_literals
 
 import MySQLdb
 from getpass import getpass
 
 import db_config as config
 
+"""Create backend database and repository.
 
+"""
 def main():
 
     if config.db_config["user_privileged"] == "USER_PRIVILEGED":
