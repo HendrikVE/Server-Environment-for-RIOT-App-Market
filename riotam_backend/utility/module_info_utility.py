@@ -17,9 +17,6 @@ def get_module_path(db, module_id):
     db.query("SELECT path FROM modules WHERE id=%s", (module_id,))
     applications = db.fetchall()
 
-    logging.debug("asked for %s" % module_id)
-    logging.debug("got %s" % str(applications))
-
     if len(applications) != 1:
         logging.error("error in database: len(applications != 1)")
         return None
@@ -45,9 +42,6 @@ def get_module_id(db, module_name):
 
     db.query("SELECT id FROM modules WHERE name=%s", (module_name,))
     applications = db.fetchall()
-
-    logging.debug("asked for %s" % module_name)
-    logging.debug("got %s" % str(applications))
 
     if len(applications) != 1:
         logging.error("error in database: len(applications != 1)")

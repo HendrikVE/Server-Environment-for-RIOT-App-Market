@@ -36,9 +36,11 @@ class ModuleCache(object):
         ready_to_use_file = os.path.join(cache_path, ".ready_to_use")
 
         if os.path.isfile(ready_to_use_file):
+            logging.debug("CACHE HIT: %s" % cache_path)
             return cache_path
 
         else:
+            logging.debug("CACHE MISS %s" % cache_path)
             return None
 
     def cache(self, path, board, name):
@@ -49,6 +51,8 @@ class ModuleCache(object):
         if self.get_entry(board, name) is None:
 
             dest_in_cache = os.path.join(self._cache_dir, board, name)
+
+            logging.debug("CACHING %s" % dest_in_cache)
 
             copytree(path, dest_in_cache)
 
