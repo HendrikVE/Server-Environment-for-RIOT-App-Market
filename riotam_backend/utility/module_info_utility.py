@@ -36,3 +36,16 @@ def get_module_name(db, module_id):
 
     else:
         return applications[0]["name"]
+
+
+def get_module_id(db, module_name):
+
+    db.query("SELECT id FROM modules WHERE name=%s", (module_name,))
+    applications = db.fetchall()
+
+    if len(applications) != 1:
+        logging.error("error in database: len(applications != 1)")
+        return None
+
+    else:
+        return int(applications[0]["id"])

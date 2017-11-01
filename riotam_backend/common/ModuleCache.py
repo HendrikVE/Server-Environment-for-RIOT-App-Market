@@ -8,10 +8,10 @@
  * General Public License v2.1. See the file LICENSE in the top level
  * directory for more details.
 """
-
+import logging
 import os
 import sys
-from shutil import copytree, copyfile
+from shutil import copytree
 
 # append root of the python code tree to sys.apth so that imports are working
 #   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
@@ -36,9 +36,11 @@ class ModuleCache(object):
         ready_to_use_file = os.path.join(cache_path, ".ready_to_use")
 
         if os.path.isfile(ready_to_use_file):
+            logging.debug("CACHE HIT: %s" % cache_path)
             return cache_path
 
         else:
+            logging.debug("CACHE MISS %s" % cache_path)
             return None
 
     def cache(self, path, board, name):
@@ -49,6 +51,8 @@ class ModuleCache(object):
         if self.get_entry(board, name) is None:
 
             dest_in_cache = os.path.join(self._cache_dir, board, name)
+
+            logging.debug("CACHING %s" % dest_in_cache)
 
             copytree(path, dest_in_cache)
 
