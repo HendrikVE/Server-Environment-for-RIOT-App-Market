@@ -27,7 +27,6 @@ sys.path.append(PROJECT_ROOT_DIR)
 from config import config
 from utility import build_utility as b_util
 from utility import application_info_utility as a_util
-from utility import module_info_utility as m_util
 from common.MyDatabase import MyDatabase
 from common.ModuleCache import ModuleCache
 from common.ApplicationCache import ApplicationCache
@@ -116,12 +115,7 @@ def main(argv):
 
         # check for cached modules (only, if no binaries were found)
         if not cached_binaries:
-            used_module_names = a_util.get_defined_modules(db, application_id)
-
-            used_modules = []
-            for module_name in used_module_names:
-                used_modules.append(m_util.get_module_id(db, module_name))
-
+            used_modules = a_util.get_defined_modules(db, application_id)
             prepare_modules_from_cache(module_cache, bin_dir, board, used_modules)
 
     if not cached_binaries:
@@ -153,15 +147,15 @@ def main(argv):
             if os.path.isfile(elffile_path) and os.path.isfile(hexfile_path):
                 build_result["success"] = True
 
-        app_build_dir_abs_path = os.path.abspath(app_build_dir)
-        bin_dir = b_util.get_bindir(app_build_dir_abs_path, board)
 
         if using_cache and not cached_binaries:
+
+            app_build_dir_abs_path = os.path.abspath(app_build_dir)
+            bin_dir = b_util.get_bindir(app_build_dir_abs_path, board)
 
             # cache modules of successful tasks
             cache_modules(module_cache, bin_dir, board, used_modules)
 
-        if prefetching:
             # cache application
             cache_application(application_cache, bin_dir, temp_dir, board, app_name, source_app_name, source_app_dir_name)
 
@@ -201,7 +195,7 @@ def init_argparse():
     parser.add_argument("--prefetching",
                         dest="prefetching", action="store_true", default=False,
                         required=False,
-                        help="if flag is set, binaries are just generated and stored in application cache. Further steps are ignored")
+                        help="if flag is set, binaries are just generated. Further steps are ignored")
 
     return parser
 
@@ -209,13 +203,11 @@ def init_argparse():
 def prepare_modules_from_cache(cache, bin_dir, board, used_modules):
 
     for module in used_modules:
-
-        module_dir_name = os.path.basename(m_util.get_module_path(db, module))
-        cached_module_path = cache.get_entry(board, module_dir_name)
+        cached_module_path = cache.get_entry(board, module)
 
         if cached_module_path is not None:
 
-            dest_path_module = os.path.join(bin_dir, module_dir_name)
+            dest_path_module = os.path.join(bin_dir, module)
 
             try:
                 rmtree(dest_path_module)
@@ -229,10 +221,8 @@ def prepare_modules_from_cache(cache, bin_dir, board, used_modules):
 def cache_modules(cache, bin_dir, board, used_modules):
 
     for module in used_modules:
-
-        module_dir_name = os.path.basename(m_util.get_module_path(db, module))
-        module_path = os.path.join(bin_dir, module_dir_name)
-        cache.cache(module_path, board, module_dir_name)
+        module_path = os.path.join(bin_dir, module)
+        cache.cache(module_path, board, module)
 
 
 def cache_application(cache, bin_dir, temp_dir, board, app_name, source_app_name, source_app_dir_name):
