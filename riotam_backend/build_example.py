@@ -156,6 +156,7 @@ def main(argv):
             # cache modules of successful tasks
             cache_modules(module_cache, bin_dir, board, used_modules)
 
+        if prefetching:
             # cache application
             cache_application(application_cache, bin_dir, temp_dir, board, app_name, source_app_name, source_app_dir_name)
 
