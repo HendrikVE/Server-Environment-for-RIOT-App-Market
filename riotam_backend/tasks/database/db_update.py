@@ -72,12 +72,23 @@ def update_boards():
 
     """
 
+    def is_valid_board(path, item):
+        """
+        A board is valid if:
+            1. path is a directory
+            2. path doesn't end with "<prefix>-common"
+            3. board is not native
+        """
+        return not os.path.isfile(os.path.join(path, item))\
+               and not item.endswith('-common')\
+               and not item == 'native'
+
     db.query('TRUNCATE boards')
     
     path = os.path.join(PROJECT_ROOT_DIR, config.path_root, 'boards')
 
     for item in os.listdir(path):
-        if not os.path.isfile(os.path.join(path, item)) and not item.endswith('-common'):
+        if is_valid_board(path, item):
             
             sql = 'INSERT INTO boards (display_name, internal_name, flash_program) VALUES (%s, %s, %s);'
             db.query(sql, (item, item, 'openocd'))
