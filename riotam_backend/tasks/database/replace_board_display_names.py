@@ -125,11 +125,19 @@ replacement_dict = {
 
 db = MyDatabase()
 
-sql = 'UPDATE boards SET display_name=%s WHERE internal_name=%s;'
 
-for internal_name, display_name in replacement_dict.iteritems():
-    
-    constructed_display_name = display_name + ' (%s)' % internal_name
-    db.query(sql, (constructed_display_name, internal_name))
+def main():
 
-db.commit()
+    sql = 'UPDATE boards SET display_name=%s WHERE internal_name=%s;'
+
+    for internal_name, display_name in replacement_dict.iteritems():
+
+        constructed_display_name = display_name + ' (%s)' % internal_name
+        db.query(sql, (constructed_display_name, internal_name))
+
+    db.commit()
+
+
+if __name__ == '__main__':
+
+    main()
