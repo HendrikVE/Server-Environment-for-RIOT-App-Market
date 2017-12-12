@@ -79,9 +79,11 @@ def update_boards():
             2. path doesn't end with "<prefix>-common"
             3. board is not native
         """
-        return not os.path.isfile(os.path.join(path, item))\
-               and not item.endswith('-common')\
-               and not item == 'native'
+        return (
+                not os.path.isfile(os.path.join(path, item))
+                and not item.endswith('-common')
+                and not item == 'native'
+        )
 
     db.query('TRUNCATE boards')
     

@@ -30,21 +30,14 @@ from utility import application_info_utility as a_util
 from common.MyDatabase import MyDatabase
 from common.ApplicationCache import ApplicationCache
 from common.common import create_directories
-
-build_result = {
-    'cmd_output': '',
-    'board': None,
-    'application_name': 'application',
-    'output_archive': None,
-    'success': False
-}
+from common.BuildResult import get_build_result_template
 
 LOGFILE = os.path.join(PROJECT_ROOT_DIR, 'log', 'build_example.log')
 LOGFILE = os.environ.get('BACKEND_LOGFILE', LOGFILE)
 
-MODULE_CACHE_DIR = os.path.join(PROJECT_ROOT_DIR, config.MODULE_CACHE_DIR)
 APPLICATION_CACHE_DIR = os.path.join(PROJECT_ROOT_DIR, config.APPLICATION_CACHE_DIR)
 
+build_result = get_build_result_template()
 db = MyDatabase()
 
 
