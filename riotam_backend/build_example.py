@@ -28,20 +28,19 @@ from config import config
 from utility import build_utility as b_util
 from utility import application_info_utility as a_util
 from common.MyDatabase import MyDatabase
-from common.ModuleCache import ModuleCache
 from common.ApplicationCache import ApplicationCache
 from common.common import create_directories
 
 build_result = {
-    "cmd_output": "",
-    "board": None,
-    "application_name": "application",
-    "output_archive": None,
-    "success": False
+    'cmd_output': '',
+    'board': None,
+    'application_name': 'application',
+    'output_archive': None,
+    'success': False
 }
 
-LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "build_example.log")
-LOGFILE = os.environ.get("BACKEND_LOGFILE", LOGFILE)
+LOGFILE = os.path.join(PROJECT_ROOT_DIR, 'log', 'build_example.log')
+LOGFILE = os.environ.get('BACKEND_LOGFILE', LOGFILE)
 
 MODULE_CACHE_DIR = os.path.join(PROJECT_ROOT_DIR, config.MODULE_CACHE_DIR)
 APPLICATION_CACHE_DIR = os.path.join(PROJECT_ROOT_DIR, config.APPLICATION_CACHE_DIR)
@@ -57,7 +56,7 @@ def main(argv):
         args = parser.parse_args(argv)
 
     except Exception as e:
-        build_result["cmd_output"] += str(e)
+        build_result['cmd_output'] += str(e)
         return
 
     board = args.board
@@ -65,26 +64,25 @@ def main(argv):
     using_cache = args.caching
     prefetching = args.prefetching
 
-    module_cache = ModuleCache(MODULE_CACHE_DIR)
     application_cache = ApplicationCache(APPLICATION_CACHE_DIR)
 
     source_app_name = a_util.get_application_name(db, application_id)
     source_app_dir_name = os.path.basename(a_util.get_application_path(db, application_id))
 
-    build_result["board"] = board
+    build_result['board'] = board
 
-    app_build_parent_dir = os.path.join(PROJECT_ROOT_DIR, "RIOT", "generated_by_riotam")
+    app_build_parent_dir = os.path.join(PROJECT_ROOT_DIR, 'RIOT', 'generated_by_riotam')
 
     # unique application directory name
     ticket_id = b_util.get_ticket_id()
 
-    app_name = "application%s" % ticket_id
+    app_name = 'application%s' % ticket_id
     app_build_dir = os.path.join(app_build_parent_dir, app_name)
 
     temp_dir = b_util.get_temporary_directory(PROJECT_ROOT_DIR, ticket_id)
     create_directories(temp_dir)
 
-    build_result["application_name"] = app_name
+    build_result['application_name'] = app_name
 
     app_path = os.path.join(PROJECT_ROOT_DIR, a_util.get_application_path(db, application_id))
     copytree(app_path, app_build_dir)
@@ -92,12 +90,11 @@ def main(argv):
     app_build_dir_abs_path = os.path.abspath(app_build_dir)
     bin_dir = b_util.get_bindir(app_build_dir_abs_path, board)
 
-    used_modules = None
     cached_binaries = False
     if using_cache:
 
-        cached_elffile_path = application_cache.get_entry(board, source_app_dir_name, "%s.elf" % source_app_name)
-        cached_hexfile_path = application_cache.get_entry(board, source_app_dir_name, "%s.hex" % source_app_name)
+        cached_elffile_path = application_cache.get_entry(board, source_app_dir_name, '%s.elf' % source_app_name)
+        cached_hexfile_path = application_cache.get_entry(board, source_app_dir_name, '%s.hex' % source_app_name)
 
         if (cached_elffile_path is not None) or (cached_hexfile_path is not None):
 
@@ -108,35 +105,30 @@ def main(argv):
             # copy files from cache in to bin_dir.
             # Need to rename it because further steps expect given name based on ticketID
             if cached_elffile_path is not None:
-                copyfile(cached_elffile_path, os.path.join(bin_dir, "%s.elf" % app_name))
+                copyfile(cached_elffile_path, os.path.join(bin_dir, '%s.elf' % app_name))
 
             if cached_hexfile_path is not None:
-                copyfile(cached_hexfile_path, os.path.join(bin_dir, "%s.hex" % app_name))
-
-        # check for cached modules (only, if no binaries were found)
-        if not cached_binaries:
-            used_modules = a_util.get_defined_modules(db, application_id)
-            prepare_modules_from_cache(module_cache, bin_dir, board, used_modules)
+                copyfile(cached_hexfile_path, os.path.join(bin_dir, '%s.hex' % app_name))
 
     if not cached_binaries:
         # if nothing found in cache, just build it
-        replace_application_name(os.path.join(app_build_dir, "Makefile"), app_name)
-        build_result["cmd_output"] += b_util.execute_makefile(app_build_dir, board, app_name)
+        replace_application_name(os.path.join(app_build_dir, 'Makefile'), app_name)
+        build_result['cmd_output'] += b_util.execute_makefile(app_build_dir, board, app_name)
 
     try:
 
         if not prefetching:
             stripped_repo_path = b_util.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
 
-            archive_path = os.path.join(temp_dir, "RIOT_stripped.tar")
+            archive_path = os.path.join(temp_dir, 'RIOT_stripped.tar')
             b_util.zip_repo(stripped_repo_path, archive_path)
 
-            archive_extension = "tar"
+            archive_extension = 'tar'
 
-            build_result["output_archive_extension"] = archive_extension
-            build_result["output_archive"] = b_util.file_as_base64(archive_path)
+            build_result['output_archive_extension'] = archive_extension
+            build_result['output_archive'] = b_util.file_as_base64(archive_path)
 
-            build_result["success"] = True
+            build_result['success'] = True
 
         else:
 
@@ -145,16 +137,7 @@ def main(argv):
             hexfile_path = b_util.app_hexfile_path(bin_dir, app_name)
 
             if os.path.isfile(elffile_path) and os.path.isfile(hexfile_path):
-                build_result["success"] = True
-
-
-        if using_cache and not cached_binaries:
-
-            app_build_dir_abs_path = os.path.abspath(app_build_dir)
-            bin_dir = b_util.get_bindir(app_build_dir_abs_path, board)
-
-            # cache modules of successful tasks
-            cache_modules(module_cache, bin_dir, board, used_modules)
+                build_result['success'] = True
 
         if prefetching:
             # cache application
@@ -162,7 +145,7 @@ def main(argv):
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
-        build_result["cmd_output"] += "something went wrong on server side"
+        build_result['cmd_output'] += 'something went wrong on server side'
 
     # delete temporary directories after finished build
     try:
@@ -175,55 +158,30 @@ def main(argv):
 
 def init_argparse():
 
-    parser = argparse.ArgumentParser(description="Build RIOT OS")
+    parser = argparse.ArgumentParser(description='Build RIOT OS')
 
-    parser.add_argument("--application",
-                        dest="application", action="store",
+    parser.add_argument('--application',
+                        dest='application', action='store',
                         type=int,
                         required=True,
-                        help="modules to build in to the image")
+                        help='modules to build in to the image')
 
-    parser.add_argument("--board",
-                        dest="board", action="store",
+    parser.add_argument('--board',
+                        dest='board', action='store',
                         required=True,
-                        help="the board for which the image should be made")
+                        help='the board for which the image should be made')
 
-    parser.add_argument("--caching",
-                        dest="caching", action="store_true", default=False,
+    parser.add_argument('--caching',
+                        dest='caching', action='store_true', default=False,
                         required=False,
-                        help="wether to use cache or not")
+                        help='wether to use cache or not')
 
-    parser.add_argument("--prefetching",
-                        dest="prefetching", action="store_true", default=False,
+    parser.add_argument('--prefetching',
+                        dest='prefetching', action='store_true', default=False,
                         required=False,
-                        help="if flag is set, binaries are just generated. Further steps are ignored")
+                        help='if flag is set, binaries are just generated. Further steps are ignored')
 
     return parser
-
-
-def prepare_modules_from_cache(cache, bin_dir, board, used_modules):
-
-    for module in used_modules:
-        cached_module_path = cache.get_entry(board, module)
-
-        if cached_module_path is not None:
-
-            dest_path_module = os.path.join(bin_dir, module)
-
-            try:
-                rmtree(dest_path_module)
-
-            except:
-                pass
-
-            copytree(cached_module_path, dest_path_module)
-
-
-def cache_modules(cache, bin_dir, board, used_modules):
-
-    for module in used_modules:
-        module_path = os.path.join(bin_dir, module)
-        cache.cache(module_path, board, module)
 
 
 def cache_application(cache, bin_dir, temp_dir, board, app_name, source_app_name, source_app_dir_name):
@@ -233,8 +191,8 @@ def cache_application(cache, bin_dir, temp_dir, board, app_name, source_app_name
     hexfile_path = b_util.app_hexfile_path(bin_dir, app_name)
 
     # set new name for the file which should be cached with this name
-    cached_elffile_name = "%s.elf" % source_app_name
-    cached_hexfile_name = "%s.hex" % source_app_name
+    cached_elffile_name = '%s.elf' % source_app_name
+    cached_hexfile_name = '%s.hex' % source_app_name
 
     # set path to files to be cached
     path_elffile_to_cache = os.path.join(temp_dir, cached_elffile_name)
@@ -271,28 +229,28 @@ def replace_application_name(path, application_name):
     """
 
     # Save the old one to check later in case there is an error
-    copyfile(path, path + ".old")
+    copyfile(path, path + '.old')
 
-    with open(path + ".old", "r") as old_makefile:
-        with open(path, "w") as makefile:
+    with open(path + '.old', 'r') as old_makefile:
+        with open(path, 'w') as makefile:
 
             for line in old_makefile.readlines():
-                if line.replace(" ", "").startswith("APPLICATION="):
-                    line = "APPLICATION = %s\n" % application_name
+                if line.replace(' ', '').startswith('APPLICATION='):
+                    line = 'APPLICATION = %s\n' % application_name
 
                 makefile.write(line)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
     logging.basicConfig(filename=LOGFILE, format=config.LOGGING_FORMAT,
-                        datefmt="%Y-%m-%d %H:%M:%S", level=logging.DEBUG)
+                        datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
 
     try:
         main(sys.argv[1:])
 
     except Exception as e:
         logging.error(str(e), exc_info=True)
-        build_result["cmd_output"] += str(e)
+        build_result['cmd_output'] += str(e)
 
     print(build_result)
