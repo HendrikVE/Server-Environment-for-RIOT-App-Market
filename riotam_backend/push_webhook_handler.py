@@ -13,9 +13,8 @@ from __future__ import print_function
 
 import logging
 import os
-from subprocess import Popen, PIPE, STDOUT
-
 from shutil import rmtree
+from subprocess import Popen, PIPE, STDOUT
 
 from config import config
 

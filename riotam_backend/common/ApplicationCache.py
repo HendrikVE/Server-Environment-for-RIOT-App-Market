@@ -11,7 +11,7 @@
 import logging
 import os
 import sys
-from shutil import copytree, copyfile
+from shutil import copyfile
 
 # append root of the python code tree to sys.apth so that imports are working
 #   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
