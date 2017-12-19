@@ -82,6 +82,7 @@ def update_boards():
         return (
                 not os.path.isfile(os.path.join(path, item))
                 and not item.endswith('-common')
+                and not item == 'common'
                 and not item == 'native'
         )
 
