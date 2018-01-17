@@ -29,7 +29,7 @@ def main():
     Routine to update backend repository. Gets called by push_webhook_handler.py inside frontend"""
 
     """DELETE CACHE"""
-    cache_dir = config.MODULE_CACHE_DIR
+    cache_dir = config.APPLICATION_CACHE_DIR
     try:
         rmtree(cache_dir)
 
@@ -59,7 +59,7 @@ def main():
     logging.debug("STRIP_RIOT_REPO.py:\n" + output)
 
     # give calling script from frontend an answer
-    print("updated backend sucessfully")
+    print("updated backend successfully")
 
 
 def execute_command(cmd, cwd=None):

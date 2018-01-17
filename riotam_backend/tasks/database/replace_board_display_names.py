@@ -23,6 +23,7 @@ sys.path.append(PROJECT_ROOT_DIR)
 from riotam_backend.common.MyDatabase import MyDatabase
 
 replacement_dict = {
+    'acd52832': 'aconno ACD52832',
     'airfy-beacon': 'Airfy Beacon',
     'arduino-due': 'Arduino Due',
     'arduino-duemilanove': 'Arduino Duemilanove',
@@ -34,7 +35,7 @@ replacement_dict = {
     'avsextrem': 'AVS Extrem',
     'b-l072z-lrwan1': 'STMicroelectronics B-L072Z-LRWAN1',
     'b-l475e-iot01a': 'STMicroelectronics B-L475E-IOT01A',
-    'bluepill': 'Bluepill',
+    'bluepill': 'Blue Pill',
     'calliope-mini': 'Calliope Mini',
     'cc2538dk': 'CC2538DK',
     'cc2650-launchpad': 'CC2650 LaunchPad',
@@ -105,6 +106,7 @@ replacement_dict = {
     'remote-pa': 'Zolertia remote (Prototype)',
     'remote-reva': 'Zolertia remote Rev. A',
     'remote-revb': 'Zolertia remote Rev. B',
+    'ruuvitag': 'RuuviTag',
     'samd21-xpro': 'SAMD21-xpro',
     'saml21-xpro': 'SAML21-xpro',
     'samr21-xpro': 'SAMR21-xpro',
@@ -119,6 +121,7 @@ replacement_dict = {
     'stm32f4discovery': 'STM32F4discovery',
     'stm32f7discovery': 'STM32F7discovery',
     'telosb': 'TelosB',
+    'thingy52': 'Nordic Thingy:52',
     'udoo': 'UDOO',
     'waspmote-pro': 'Waspmote Pro',
     'wsn430-v1_3b': 'WSN430 v1_3b',
