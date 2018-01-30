@@ -18,7 +18,7 @@ import sys
 from shutil import copytree, rmtree, copyfile
 
 # append root of the python code tree to sys.apth so that imports are working
-#   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
+#   alternative: add path to rapstore_backend to the PYTHONPATH environment variable, but this includes one more step
 #   which could be forget
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, os.pardir))
@@ -78,6 +78,7 @@ def main(argv):
     build_result['application_name'] = app_name
 
     app_path = os.path.join(PROJECT_ROOT_DIR, a_util.get_application_path(db, application_id))
+
     copytree(app_path, app_build_dir)
 
     app_build_dir_abs_path = os.path.abspath(app_build_dir)

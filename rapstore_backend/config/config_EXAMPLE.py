@@ -11,7 +11,7 @@
 
 db_config = {
     "host": "localhost",
-    "user": "riotam_backend",
+    "user": "rapstore_backend",
     "passwd": "PASSWORD_BACKEND",
     "db": "riot_os"
 }

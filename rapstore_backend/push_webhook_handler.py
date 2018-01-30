@@ -44,18 +44,18 @@ def main():
     logging.debug("UPDATE SUBMODULES:\n" + output)
 
     """SETUP DATABASE"""
-    output = execute_command(["python", "db_create.py"], os.path.join(PROJECT_ROOT_DIR, "riotam_backend", "setup"))
+    output = execute_command(["python", "db_create.py"], os.path.join(PROJECT_ROOT_DIR, "rapstore_backend", "setup"))
     logging.debug("DB_CREATE:\n" + output)
 
-    output = execute_command(["python", "db_setup.py"], os.path.join(PROJECT_ROOT_DIR, "riotam_backend", "setup"))
+    output = execute_command(["python", "db_setup.py"], os.path.join(PROJECT_ROOT_DIR, "rapstore_backend", "setup"))
     logging.debug("DB_SETUP:\n" + output)
 
     """UPDATE DATABASE"""
-    output = execute_command(["python", "db_update.py"], os.path.join(PROJECT_ROOT_DIR, "riotam_backend", "tasks", "database"))
+    output = execute_command(["python", "db_update.py"], os.path.join(PROJECT_ROOT_DIR, "rapstore_backend", "tasks", "database"))
     logging.debug("DB_UPDATE:\n" + output)
 
     """CREATE STRIPPED RIOT REPOSITORY"""
-    output = execute_command(["python", "strip_riot_repo.py"], os.path.join(PROJECT_ROOT_DIR, "riotam_backend"))
+    output = execute_command(["python", "strip_riot_repo.py"], os.path.join(PROJECT_ROOT_DIR, "rapstore_backend"))
     logging.debug("STRIP_RIOT_REPO.py:\n" + output)
 
     # give calling script from frontend an answer

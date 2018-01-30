@@ -21,15 +21,15 @@ from subprocess import PIPE, STDOUT, Popen
 from datetime import datetime
 
 # append root of the python code tree to sys.apth so that imports are working
-#   alternative: add path to riotam_backend to the PYTHONPATH environment variable, but this includes one more step
+#   alternative: add path to rapstore_backend to the PYTHONPATH environment variable, but this includes one more step
 #   which could be forget
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 PROJECT_ROOT_DIR = os.path.normpath(os.path.join(CUR_DIR, os.pardir, os.pardir, os.pardir))
 sys.path.append(PROJECT_ROOT_DIR)
 
-from riotam_backend.config import config
+from rapstore_backend.config import config
 from BuildTaskStatistic import BuildTaskStatistic
-from riotam_backend.common.MyDatabase import MyDatabase
+from rapstore_backend.common.MyDatabase import MyDatabase
 
 LOGFILE = os.path.join(PROJECT_ROOT_DIR, "log", "prepare_all.log")
 USING_CACHE = True
@@ -98,7 +98,7 @@ def build_worker(task_list):
         if USING_CACHE:
             cmd.append("--caching")
 
-        process = Popen(cmd, stdout=PIPE, stderr=STDOUT, cwd=os.path.join(PROJECT_ROOT_DIR, "riotam_backend"))
+        process = Popen(cmd, stdout=PIPE, stderr=STDOUT, cwd=os.path.join(PROJECT_ROOT_DIR, "rapstore_backend"))
         output = process.communicate()[0]
 
         end_time = datetime.now().replace(microsecond=0)

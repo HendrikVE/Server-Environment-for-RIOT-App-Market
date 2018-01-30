@@ -48,7 +48,7 @@ def generate_stripped_repo(app_build_dir, stripped_riot_dir, temp_dir, board, ap
     elffile_path = app_elffile_path(bin_dir, app_name)
     hexfile_path = app_hexfile_path(bin_dir, app_name)
 
-    app_copy_dir = os.path.join(temp_dir, "RIOT_stripped", "generated_by_riotam", app_name)
+    app_copy_dir = os.path.join(temp_dir, "RIOT_stripped", "generated_by_rapstore", app_name)
     bin_copy_dir = os.path.join(app_copy_dir, "bin", board)
 
     elffile_dest_path = app_elffile_path(bin_copy_dir, app_name)
