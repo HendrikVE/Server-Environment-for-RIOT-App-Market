@@ -1,4 +1,4 @@
-# Backend for the RIOT App Market
+# Backend for the RAPstore
 
 ## Prerequisites
 * Apache2 webserver
@@ -11,10 +11,10 @@
 1. go to setup/ and run 'python db_create' with your privileged user login data OR do it manually:
     * create database 'riot_os'
     * add a new user 'rapstore_backend' with following privileges only for 'riot_os' database (NOT GLOBAL!): SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, ALTER
-    * add a new user 'riotam_website' with following privileges only for 'riot_os' database (NOT GLOBAL!): SELECT
+    * add a new user 'rapstore_website' with following privileges only for 'riot_os' database (NOT GLOBAL!): SELECT
 2. copy setup/db_config_EXAMPLES.py and rename the copy to db_config.py
 3. copy config/config_EXAMPLES.py and rename the copy to config.py
-4. change passwords in db_config.py and config.py to the passwords you set by creating user 'rapstore_backend' and 'riotam-website'
+4. change passwords in db_config.py and config.py to the passwords you set by creating user 'rapstore_backend' and 'rapstore-website'
 5. replace USER_PRIVILEGED and PASSWORD_PRIVILEGED by your values
 6. go to setup/ and run 'python db_setup.py'
 7. update the database with running 'python db_update.py'
