@@ -15,6 +15,7 @@ import argparse
 import logging
 import os
 import sys
+import time
 from shutil import copytree, rmtree, copyfile
 
 # append root of the python code tree to sys.apth so that imports are working
@@ -107,7 +108,9 @@ def main(argv):
     if not cached_binaries:
         # if nothing found in cache, just build it
         replace_application_name(os.path.join(app_build_dir, 'Makefile'), app_name)
+        before = time.time()
         build_result['cmd_output'] += b_util.execute_makefile(app_build_dir, board, app_name)
+        logging.debug('Build time: %f', time.time() - before)
 
     try:
 
@@ -115,7 +118,9 @@ def main(argv):
             stripped_repo_path = b_util.generate_stripped_repo(app_build_dir, PROJECT_ROOT_DIR, temp_dir, board, app_name)
 
             archive_path = os.path.join(temp_dir, 'RIOT_stripped.tar')
+            before = time.time()
             b_util.zip_repo(stripped_repo_path, archive_path)
+            logging.debug('Create archive time: %f', time.time() - before)
 
             archive_extension = 'tar'
 
