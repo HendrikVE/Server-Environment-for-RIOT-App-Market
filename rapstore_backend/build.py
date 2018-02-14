@@ -54,7 +54,7 @@ def main(argv):
 
     build_result['board'] = board
 
-    app_build_parent_dir = os.path.join(PROJECT_ROOT_DIR, 'RIOT', 'generated_by_riotam')
+    app_build_parent_dir = os.path.join(PROJECT_ROOT_DIR, 'RIOT', 'generated_by_rapstore')
 
     # unique application directory name
     ticket_id = b_util.get_ticket_id()
