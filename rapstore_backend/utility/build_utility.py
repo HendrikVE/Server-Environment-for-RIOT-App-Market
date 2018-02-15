@@ -204,6 +204,7 @@ def execute_makefile(app_build_dir, board, app_name):
            "BOARD=%s" % board,
            "BINDIRBASE=%s" % bindirbase,
            "ELFFILE=%s" % elffile]
+    logging.debug('make: %s', cmd)
 
     process = Popen(cmd, stdout=PIPE, stderr=STDOUT)
     return process.communicate()[0]
