@@ -164,12 +164,17 @@ def create_directories(path):
 
 
 def app_elffile_path(path, app_name):
-    return os.path.join(path, "%s.elf" % app_name)
+    return app_outfile_path(path, app_name, 'elf')
 
 
 def app_hexfile_path(path, app_name):
-    elffile_path = app_elffile_path(path, app_name)
-    return _rreplace(elffile_path, ".elf", ".hex", 1)
+    return app_outfile_path(path, app_name, 'hex')
+
+
+def app_outfile_path(path, app_name, extension):
+    """Application outfile path with extension."""
+    filename = '%s.%s' % (app_name, extension)
+    return os.path.join(path, filename)
 
 
 def execute_makefile(app_build_dir, board, app_name):
@@ -276,8 +281,3 @@ def _prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
 
     except Exception as e:
         return None
-
-
-def _rreplace(string, old, new, occurrences):
-    list = string.rsplit(old, occurrences)
-    return new.join(list)
