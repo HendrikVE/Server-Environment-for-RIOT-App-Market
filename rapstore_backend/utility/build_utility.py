@@ -44,27 +44,30 @@ def generate_stripped_repo(app_build_dir, stripped_riot_dir, temp_dir, board, ap
         Path to the generated stripped RIOT repository
 
     """
+    # TODO Adapt this to get 'files' as parameter, not from disk
+
     bin_dir = os.path.join(app_build_dir, "bin", board)
-    elffile_path = app_elffile_path(bin_dir, app_name)
-    hexfile_path = app_hexfile_path(bin_dir, app_name)
 
     app_copy_dir = os.path.join(temp_dir, "RIOT_stripped", "generated_by_rapstore", app_name)
     bin_copy_dir = os.path.join(app_copy_dir, "bin", board)
 
-    elffile_dest_path = app_elffile_path(bin_copy_dir, app_name)
-    hexfile_dest_path = app_hexfile_path(bin_copy_dir, app_name)
-    makefile_dest_path = app_copy_dir
-
-    # [(src_path, dest_path)]
-    single_copy_operations = [
-        (elffile_path, elffile_dest_path),
-        (hexfile_path, hexfile_dest_path),
-        (os.path.join(app_build_dir, "Makefile"), os.path.join(makefile_dest_path, "Makefile"))
-    ]
 
     path_stripped_riot = os.path.join(stripped_riot_dir, "RIOT_stripped")
-    stripped_repo_path = _prepare_stripped_repo(path_stripped_riot, os.path.join(temp_dir, "RIOT_stripped"),
-                                                  single_copy_operations, board)
+    stripped_repo_path = os.path.join(temp_dir, "RIOT_stripped")
+
+    # Create stripped repository wit firmwares
+    _create_riot_flasher(path_stripped_riot, stripped_repo_path, board)
+    # Mandatory files
+    _copy_file_with_parents(os.path.join(app_build_dir, "Makefile"),
+                            os.path.join(app_copy_dir, "Makefile"))
+    _copy_file_with_parents(app_outfile_path(bin_dir, app_name, 'elf'),
+                            app_outfile_path(bin_copy_dir, app_name, 'elf'))
+    # Optional files
+    optfiles = ('bin', 'hex')
+    for optfile in optfiles:
+        src = app_outfile_path(bin_dir, app_name, optfile)
+        dst = app_outfile_path(bin_copy_dir, app_name, optfile)
+        _copy_file_with_parents(src, dst, ignore_no_src=True)
 
     return stripped_repo_path
 
@@ -163,14 +166,6 @@ def create_directories(path):
             raise
 
 
-def app_elffile_path(path, app_name):
-    return app_outfile_path(path, app_name, 'elf')
-
-
-def app_hexfile_path(path, app_name):
-    return app_outfile_path(path, app_name, 'hex')
-
-
 def app_outfile_path(path, app_name, extension):
     """Application outfile path with extension."""
     filename = '%s.%s' % (app_name, extension)
@@ -202,7 +197,7 @@ def execute_makefile(app_build_dir, board, app_name):
 
     bindirbase = get_bindirbase(app_build_dir_abs_path)
     bindir = get_bindir(app_build_dir_abs_path, board)
-    elffile = app_elffile_path(bindir, app_name)
+    elffile = app_outfile_path(bindir, app_name, 'elf')
 
     cmd = ["make",
            "-C", app_build_dir, # work within app_build_dir
@@ -229,9 +224,22 @@ def get_bindir(app_build_dir, board):
     return bin_dir
 
 
-def _prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
+def _copy_file_with_parents(src, dst, ignore_no_src=False):
+    """Copy `src` to `dst` and create `dst` parents directories.
+
+    If `src` does not exist and `ignore_no_src` is set, do nothing.
     """
-    Strip a RIOT repositiory to a minimal version, so that flashing still works
+    if not os.path.isfile(src) and ignore_no_src:
+        return
+
+    dst_dir = os.path.dirname(dst)
+    create_directories(dst_dir)
+
+    copyfile(src, dst)
+
+
+def _create_riot_flasher(src_path, dest_path, board):
+    """Create a minimal RIOT repository to allow flashing.
 
     Parameters
     ----------
@@ -239,45 +247,24 @@ def _prepare_stripped_repo(src_path, dest_path, single_copy_operations, board):
         Path to riot repository you want to be stripped
     dest_path: string
         Path to store the stripped riot repository
-    single_copy_operations: array_like
-        List of (src_path, dest_path) tuples to copy files
     board: string
         Name of the board
-
-    Returns
-    -------
-    string
-        Path to stripped RIOT repository
-
     """
-    try:
-        copytree(src_path, dest_path)
+    copytree(src_path, dest_path)
+    _flasher_remove_unnecessary_boards(dest_path, board)
+
+
+def _flasher_remove_unnecessary_boards(dest_path, board):
+    """Remove all unnecessary boards from `boards` directory."""
+    boards_dir = os.path.join(dest_path, 'boards')
+    for entry in os.listdir(boards_dir):
+        entry_path = os.path.join(boards_dir, entry)
+        if os.path.isfile(entry_path):
+            continue
+        if (entry in ('include', board)) or ('common' in entry):
+            continue
 
         try:
-            # remove all unnecessary boards
-            path_boards = os.path.join(dest_path, "boards")
-            for item in os.listdir(path_boards):
-                if not os.path.isfile(os.path.join(path_boards, item)):
-                    if (item != "include") and (not "common" in item) and (item != board):
-                        rmtree(os.path.join(path_boards, item))
-
+            rmtree(entry_path)
         except Exception as e:
             logging.error(str(e), exc_info=True)
-
-        for operation in single_copy_operations:
-            # remove file from path, because it shouldnt be created as directory
-            copy_dest_path = operation[1]
-            index = copy_dest_path.rindex("/")
-            path_to_create = copy_dest_path[:index]
-            create_directories(path_to_create)
-
-            try:
-                copyfile(operation[0], copy_dest_path)
-
-            except Exception as e:
-                raise e
-
-        return dest_path
-
-    except Exception as e:
-        return None
