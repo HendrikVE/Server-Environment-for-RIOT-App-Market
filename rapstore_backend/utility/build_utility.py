@@ -85,15 +85,11 @@ def zip_repo(src_path, dest_path):
         Destination path
 
     """
-    try:
-        tar = tarfile.open(dest_path, "w:gz")
-        for file_name in glob.glob(os.path.join(src_path, "*")):
-            tar.add(file_name, os.path.basename(file_name))
+    tar = tarfile.open(dest_path, "w:gz")
+    for file_name in glob.glob(os.path.join(src_path, "*")):
+        tar.add(file_name, os.path.basename(file_name))
 
-        tar.close()
-
-    except Exception as e:
-        raise e
+    tar.close()
 
 
 def file_as_base64(path):
