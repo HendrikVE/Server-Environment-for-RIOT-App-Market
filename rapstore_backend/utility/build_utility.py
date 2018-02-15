@@ -56,7 +56,8 @@ def generate_stripped_repo(app_build_dir, stripped_riot_dir, temp_dir, board, ap
     stripped_repo_path = os.path.join(temp_dir, "RIOT_stripped")
 
     # Create stripped repository wit firmwares
-    _create_riot_flasher(path_stripped_riot, stripped_repo_path, board)
+    _create_riot_flasher(path_stripped_riot, stripped_repo_path,
+                         board=board)
     # Mandatory files
     _copy_file_with_parents(os.path.join(app_build_dir, "Makefile"),
                             os.path.join(app_copy_dir, "Makefile"))
@@ -238,8 +239,10 @@ def _copy_file_with_parents(src, dst, ignore_no_src=False):
     copyfile(src, dst)
 
 
-def _create_riot_flasher(src_path, dest_path, board):
+def _create_riot_flasher(src_path, dest_path, board=None):
     """Create a minimal RIOT repository to allow flashing.
+
+    If `board` is set, remove unused boards
 
     Parameters
     ----------
@@ -251,7 +254,8 @@ def _create_riot_flasher(src_path, dest_path, board):
         Name of the board
     """
     copytree(src_path, dest_path)
-    _flasher_remove_unnecessary_boards(dest_path, board)
+    if board:
+        _flasher_remove_unnecessary_boards(dest_path, board)
 
 
 def _flasher_remove_unnecessary_boards(dest_path, board):
